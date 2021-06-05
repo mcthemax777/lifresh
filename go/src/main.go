@@ -59,7 +59,7 @@ func hello(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("request URI : " + r.RequestURI)
 
 	if r.Method != "GET" {
-		fmt.Fprintf(w, "Sorry, only GET methods are supported.")
+		fmt.Fprintf(w, "Sorry, only GET methods are supported!!.")
 		return
 	}
 
