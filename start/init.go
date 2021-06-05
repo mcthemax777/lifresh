@@ -16,7 +16,14 @@ func hello(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 
 	case "POST":
-		exec.Command("./pull.sh")
+		op, err := exec.Command("./pull.sh").Output()
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println(string(op))
+		fmt.Fprintf(w, string(op))
 	default:
 		fmt.Fprintf(w, "Sorry, only POST methods are supported.")
 	}
