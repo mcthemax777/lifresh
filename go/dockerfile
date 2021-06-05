@@ -1,0 +1,18 @@
+FROM golang:1.16
+RUN go env -w GO111MODULE=auto
+#ENV GOPATH /go
+#RUN go install
+WORKDIR /app/go
+
+# Copy everything from the current directory to the PWD (Present Working Directory) inside the container
+COPY . /app/go
+
+
+RUN apt-get update && apt-get upgrade -y
+RUN go get github.com/go-sql-driver/mysql
+# Install the package
+#RUN go install -v github.com/go-sql-driver/mysql
+
+EXPOSE 3001
+RUN go build ./src/main.go
+CMD ["go", "run", "./src/main.go"]

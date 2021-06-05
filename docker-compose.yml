@@ -1,0 +1,68 @@
+version: "3.7"
+services:
+    lifreshdb:
+        # 컨테이너 이름 지정
+        container_name: lifreshdb
+        # 이미지 지정 - Official Images로 컨테이너를 생성
+        image: mysql:5.7.27
+        restart: always
+        environment:
+            MYSQL_DATABASE: FishingDB
+            MYSQL_USER: test
+            MYSQL_PASSWORD: 1234
+            MYSQL_ROOT_PASSWORD: 1234
+        # 호스트에 있는 폴더를 컨테이너 안에 있는 폴더로 마운트
+        volumes:
+            - ./mysql/conf.d:/etc/mysql/conf.d
+            - ./mysql/data:/var/lib/mysql
+            - ./mysql/init.d:/docker-entrypoint-initdb.d
+        # 연결 포트 지정
+        ports:
+            - "3306:3306"
+
+    lifreshredis:
+        image: redis:latest
+        container_name: lifreshredis
+        hostname: redis
+        ports:
+            - 6379:6379
+        volumes:
+            - ./redis/data:/var/lib/redis:rw
+        restart: always
+        environment:
+            REDIS_DATABASE: test
+            REDIS_USER: test
+            REDIS_PASSWORD: 1234
+            REDIS_ROOT_PASSWORD: 1234
+
+
+    lifreshapp:
+        container_name: lifreshapp
+        # volumes:
+        #     - ./go:/go
+        build:
+            context: ./go
+            dockerfile: dockerfile
+        # db 컨테이너가 올라간 후 app 컨테이너를 올린다.
+        depends_on:
+            - lifreshdb
+            - lifreshredis
+        links:
+            - lifreshdb
+            - lifreshredis
+
+    lifreshweb:
+        container_name: lifreshweb
+        build:
+            context: ./nginx
+            dockerfile: dockerfile
+        depends_on:
+            - lifreshapp
+        volumes:
+            - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+        ports:
+            - "80:80"
+            - "443:443"
+        links:
+            - lifreshapp
+        restart: always
