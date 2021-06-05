@@ -51,6 +51,10 @@ func dbQuery(db dbInfo, query string, params string) (password string) {
 	return password
 }
 
+func Sum(i int, j int) int {
+	return (i + j)
+}
+
 func hello(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("request URI : " + r.RequestURI)
 
