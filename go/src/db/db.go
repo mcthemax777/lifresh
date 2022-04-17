@@ -23,7 +23,8 @@ type DBInfo struct {
 	database string
 }
 
-var localDbInfo = DBInfo{"root", "1234", "localhost:3306", "mysql", "Lifresh"}
+// var localDbInfo = DBInfo{"root", "1234", "host.docker.internal:3306", "mysql", "Lifresh"}
+var localDbInfo = DBInfo{"root", "1234", "127.0.0.1:3306", "mysql", "Lifresh"}
 
 // type camelNamer struct
 // {
@@ -330,4 +331,27 @@ func (dh *DBHandlerImpl) InsertTask(task *models.Task) error {
 	return nil
 }
 
+func (dh *DBHandlerImpl) RemoveTaskPlan(taskPlan *models.TaskPlan) error {
+
+	result := dbConn.Delete(&taskPlan)
+
+	//tp 생성
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) RemoveTask(task *models.Task) error {
+
+	result := dbConn.Delete(&task)
+
+	//tp 생성
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
 

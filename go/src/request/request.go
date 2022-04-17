@@ -60,4 +60,16 @@ type AddTaskReq struct {
 	TodayNo int    `json:"todayNo"`
 }
 
+type RemoveTaskPlanReq struct {
+	Sid string `json:"sid"` 
+	TaskPlanNo     int `json:"taskPlanNo"`
+	TodayNo int    `json:"todayNo"`
+}
+
+type RemoveTaskReq struct {
+	Sid string `json:"sid"` 
+	TaskNo     int `json:"taskNo"`
+	TodayNo int    `json:"todayNo"`
+}
+
 

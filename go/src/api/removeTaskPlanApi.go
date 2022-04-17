@@ -19,7 +19,7 @@ func NewRemoveTaskPlanHandler() removeTaskPlanHandler {
 
 func (h removeTaskPlanHandler) process(reqBody []byte) ([]byte, error) {
 
-	var req request.AddTaskPlanReq
+	var req request.RemoveTaskPlanReq
 	err := json.Unmarshal(reqBody, &req)
 
 	if err != nil {
@@ -51,23 +51,19 @@ func (h removeTaskPlanHandler) process(reqBody []byte) ([]byte, error) {
 
 	var taskPlan models.TaskPlan
 	taskPlan.TodayNo = today.TodayNo
-	taskPlan.DcfNo = req.DCFNo
-	taskPlan.StartTime = req.StartTime
-	taskPlan.FinishTime = req.FinishTime
-	taskPlan.Priority = req.Priority
+	taskPlan.TaskPlanNo = req.TaskPlanNo
 
-	err = db.DBHandlerSG.InsertTaskPlan(&taskPlan)
+	err = db.DBHandlerSG.RemoveTaskPlan(&taskPlan)
 
 	if err != nil {
-		return ResponseToByteArray(response.CreateFailResponse(201, "InsertTaskPlan")), err
+		return ResponseToByteArray(response.CreateFailResponse(201, "RemoveTaskPlan")), err
 	}
 
 	
 	//전송할 데이터 만들기
-	res := response.CreateSuccessResponse(response.ADD_TASK_PLAN_RES)
+	res := response.CreateSuccessResponse(response.REMOVE_TASK_PLAN_RES)
 
-	sendRes := res. (*response.AddTaskPlanRes)
-	sendRes.TaskPlan = taskPlan
+	sendRes := res. (*response.RemoveTaskPlanRes)
 	
 	return ResponseToByteArray(sendRes), nil
 }

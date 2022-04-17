@@ -6,6 +6,7 @@ import (
 	"redis"
 	"request"
 	"response"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -51,6 +52,7 @@ func (h loginHandler) process(reqBody []byte) ([]byte, error) {
 
 	//session id 생성
 	sid := uuid.New().String()
+	sid = strings.Replace(sid, "-", "", -1)
 
 	err = redis.RedisHandlerSG.SetSession(sid, account.AccountNo)
 

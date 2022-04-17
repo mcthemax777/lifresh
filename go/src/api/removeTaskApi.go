@@ -12,14 +12,14 @@ type removeTaskHandler struct {
 	SessionApiHandler
 }
 
-func NewRemoveTaskHandlerHandler() removeTaskHandler {
+func NewRemoveTaskHandler() removeTaskHandler {
 	h := removeTaskHandler{SessionApiHandler: NewSessionApiHandler()}
 	return h
 }
 
 func (h removeTaskHandler) process(reqBody []byte) ([]byte, error) {
 
-	var req request.AddTaskReq
+	var req request.RemoveTaskReq
 	err := json.Unmarshal(reqBody, &req)
 
 	if err != nil {
@@ -51,25 +51,19 @@ func (h removeTaskHandler) process(reqBody []byte) ([]byte, error) {
 
 	var task models.Task
 	task.TodayNo = today.TodayNo
-	task.DcfNo = req.DCFNo
-	task.StartTime = req.StartTime
-	task.FinishTime = req.FinishTime
-	task.Score = req.Score
-	task.Memo = req.Memo
-	
+	task.TaskNo = req.TaskNo
 
-	err = db.DBHandlerSG.InsertTask(&task)
+	err = db.DBHandlerSG.RemoveTask(&task)
 
 	if err != nil {
-		return ResponseToByteArray(response.CreateFailResponse(201, "InsertTask")), err
+		return ResponseToByteArray(response.CreateFailResponse(201, "RemoveTask")), err
 	}
 
 	
 	//전송할 데이터 만들기
-	res := response.CreateSuccessResponse(response.ADD_TASK_RES)
+	res := response.CreateSuccessResponse(response.REMOVE_TASK_RES)
 
-	sendRes := res. (*response.AddTaskRes)
-	sendRes.Task = task
+	sendRes := res. (*response.RemoveTaskRes)
 	
 	return ResponseToByteArray(sendRes), nil
 }

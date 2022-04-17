@@ -7,7 +7,7 @@ services:
         image: mysql:5.7.27
         restart: always
         environment:
-            MYSQL_DATABASE: FishingDB
+            MYSQL_DATABASE: Lifresh
             MYSQL_USER: test
             MYSQL_PASSWORD: 1234
             MYSQL_ROOT_PASSWORD: 1234

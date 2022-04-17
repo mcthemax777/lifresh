@@ -25,9 +25,16 @@ func init() {
 	handlerMap["addCF"] = NewAddCFHandler()
 	handlerMap["addTaskPlan"] = NewAddTaskPlanHandler()
 	handlerMap["addTask"] = NewAddTaskHandler()
+	handlerMap["removeTaskPlan"] = NewRemoveTaskPlanHandler()
+	handlerMap["removeTask"] = NewRemoveTaskHandler()
 }
 
 func ApiCall(c *gin.Context) {
+	c.Header("Access-Control-Allow-Origin", "*")
+	c.Header("Access-Control-Allow-Credentials", "true")
+	c.Header("Access-Control-Allow-Methods", "GET, POST")
+	c.Header("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Origin")
+
 	handler := handlerMap[c.Param("name")]
 
 	if handler == nil {

@@ -1,6 +1,8 @@
 FROM golang:1.16
 RUN go env -w GO111MODULE=auto
-#ENV GOPATH /go
+ENV GOPATH /app/go
+ENV GOROOT /usr/local/go
+
 #RUN go install
 WORKDIR /app/go
 
@@ -10,9 +12,24 @@ COPY . /app/go
 
 RUN apt-get update && apt-get upgrade -y
 RUN go get github.com/go-sql-driver/mysql
+RUN go get github.com/gin-gonic/gin
+RUN go get gorm.io/gorm
+
+RUN go get ./src/custom_time
+RUN go get ./src/lferror
+RUN go get ./src/lflog
+RUN go get ./src/models
+RUN go get ./src/request
+RUN go get ./src/response
+RUN go get ./src/redis
+RUN go get ./src/pattern
+RUN go get ./src/db
+RUN go get ./src/api
+
+
 # Install the package
 #RUN go install -v github.com/go-sql-driver/mysql
 
-EXPOSE 3001
+EXPOSE 3000
 RUN go build ./src/main.go
 CMD ["go", "run", "./src/main.go"]

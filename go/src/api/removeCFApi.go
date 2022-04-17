@@ -6,17 +6,17 @@ import (
 	"request"
 	"response"
 )
-//test
-type addCFHandler struct {
+
+type RemoveCFHandler struct {
 	SessionApiHandler
 }
 
-func NewAddCFHandler() addCFHandler {
-	h := addCFHandler{SessionApiHandler: NewSessionApiHandler()}
+func NewRemoveCFHandler() RemoveCFHandler {
+	h := RemoveCFHandler{SessionApiHandler: NewSessionApiHandler()}
 	return h
 }
 
-func (h addCFHandler) process(reqBody []byte) ([]byte, error) {
+func (h RemoveCFHandler) process(reqBody []byte) ([]byte, error) {
 
 	var req request.AddCFListReq
 	err := json.Unmarshal(reqBody, &req)
@@ -41,6 +41,8 @@ func (h addCFHandler) process(reqBody []byte) ([]byte, error) {
 		return ResponseToByteArray(response.CreateFailResponse(201, "plannerNo not")), err
 	}
 
+
+	
 	if(req.CF.CfNo == 0) {
 		
 		cfNo, err := db.DBHandlerSG.InsertCF(req.CF.Name, planner.PlannerNo)

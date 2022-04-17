@@ -11,6 +11,8 @@ const (
 	ADD_CF_RES
 	ADD_TASK_PLAN_RES
 	ADD_TASK_RES
+	REMOVE_TASK_PLAN_RES
+	REMOVE_TASK_RES
 )
 
 type Response interface {
@@ -76,6 +78,18 @@ func CreateSuccessResponse(resType int) Response {
 
 	case ADD_TASK_RES:
 		var res AddTaskRes
+		res.init(successCode, successMsg)
+
+		return &res
+
+	case REMOVE_TASK_PLAN_RES:
+		var res RemoveTaskPlanRes
+		res.init(successCode, successMsg)
+
+		return &res
+
+	case REMOVE_TASK_RES:
+		var res RemoveTaskRes
 		res.init(successCode, successMsg)
 
 		return &res
@@ -163,5 +177,21 @@ type AddTaskRes struct {
 }
 
 func (res *AddTaskRes) init(code int, msg string) {
+	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+}
+
+type RemoveTaskPlanRes struct {
+	BaseResponse
+}
+
+func (res *RemoveTaskPlanRes) init(code int, msg string) {
+	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+}
+
+type RemoveTaskRes struct {
+	BaseResponse
+}
+
+func (res *RemoveTaskRes) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }
