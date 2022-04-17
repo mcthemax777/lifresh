@@ -11,7 +11,7 @@ services:
             MYSQL_USER: test
             MYSQL_PASSWORD: 1234
             MYSQL_ROOT_PASSWORD: 1234
-        # 호스트에 있는 폴더를 컨테이너 안에 있는 폴더로 마운트e
+        # 호스트에 있는 폴더를 컨테이너 안에 있는 폴더로 마운트
         volumes:
             - ./mysql/conf.d:/etc/mysql/conf.d
             - ./mysql/data:/var/lib/mysql
