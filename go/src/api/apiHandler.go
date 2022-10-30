@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"lflog"
+	"lifresh/lflog"
+	"lifresh/redis"
+	"lifresh/response"
 	"net/http"
-	"redis"
-	"response"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -15,18 +15,30 @@ import (
 
 var handlerMap map[string]apiHandler
 
+//var logError error
+//var logger *fluent.Fluent
+
 func init() {
 	handlerMap = make(map[string]apiHandler)
 	fmt.Println("api init all")
-	handlerMap["login"] = loginHandler{}
-	handlerMap["signUp"] = signUpHandler{}
-	handlerMap["getToday"] = NewGetTodayHandler()
-	handlerMap["getCFList"] = NewGetCFListHandler()
-	handlerMap["addCF"] = NewAddCFHandler()
-	handlerMap["addTaskPlan"] = NewAddTaskPlanHandler()
-	handlerMap["addTask"] = NewAddTaskHandler()
-	handlerMap["removeTaskPlan"] = NewRemoveTaskPlanHandler()
-	handlerMap["removeTask"] = NewRemoveTaskHandler()
+	handlerMap["login"] = LoginHandler{}
+	handlerMap["signUp"] = SignUpHandler{}
+	handlerMap["getUserAllData"] = NewGetUserAllDataHandler()
+	handlerMap["getMainCategoryList"] = NewGetMainCategoryHandler()
+	handlerMap["getSubCategoryList"] = NewGetSubCategoryHandler()
+	handlerMap["getScheduleTaskList"] = NewGetScheduleTaskHandler()
+	handlerMap["getToDoTaskList"] = NewGetToDoTaskHandler()
+	handlerMap["getMoneyTaskList"] = NewGetMoneyTaskHandler()
+	handlerMap["addMainCategoryList"] = NewAddMainCategoryListHandler()
+	handlerMap["addSubCategoryList"] = NewAddSubCategoryListHandler()
+	handlerMap["addScheduleTaskList"] = NewAddScheduleTaskListHandler()
+	handlerMap["addToDoTaskList"] = NewAddToDoTaskListHandler()
+	handlerMap["addMoneyTaskList"] = NewAddMoneyTaskListHandler()
+	handlerMap["removeMainCategoryList"] = NewRemoveMainCategoryListHandler()
+	handlerMap["removeSubCategoryList"] = NewRemoveSubCategoryListHandler()
+	handlerMap["removeScheduleTaskList"] = NewRemoveScheduleTaskListHandler()
+	handlerMap["removeToDoTaskList"] = NewRemoveToDoTaskListHandler()
+	handlerMap["removeMoneyTaskList"] = NewRemoveMoneyTaskListHandler()
 }
 
 func ApiCall(c *gin.Context) {
@@ -38,31 +50,33 @@ func ApiCall(c *gin.Context) {
 	handler := handlerMap[c.Param("name")]
 
 	if handler == nil {
-		return 
+		lflog.Logging(lflog.LogLevelPanic, "not exist handler")
+		return
 	}
 
 	body, err := ioutil.ReadAll(c.Request.Body)
 
 	if err != nil {
-		lflog.Logging(1, err.Error())
+		lflog.Logging(lflog.LogLevelInfo, err.Error())
 		c.String(http.StatusOK, string(ResponseToByteArray(response.CreateFailResponse(301, "body error"))))
 		return
 	}
 
 	//받은 데이터 출력
-	lflog.Logging(1, string(body))
+	//lflog.Logging(lflog.LogLevelInfo, string(body))
 
 	//기본 세팅(현재 시간, 유저 정보 등등...)
-	
 
 	//로직 실행
 	res, err := handler.process(body)
 
 	if err != nil {
-		lflog.Logging(1, err.Error())
+		lflog.Logging(lflog.LogLevelInfo, err.Error())
 	}
 
-	lflog.Logging(1, string(res))
+	resultLog := "{\"input\":" + string(body) + ", \"output\":" + string(res) + "}"
+
+	lflog.Logging(lflog.LogLevelInfo, resultLog)
 
 	c.String(http.StatusOK, string(res))
 }
@@ -75,7 +89,7 @@ func ResponseToByteArray(res response.Response) []byte {
 	result, _ := json.Marshal(res)
 
 	return result
-} 
+}
 
 type SessionApiHandler struct {
 	CurrentTime time.Time
@@ -93,9 +107,10 @@ func (sah *SessionApiHandler) checkSession(sid string, currentTime time.Time) (u
 	sessionInfo, err := redis.RedisHandlerSG.GetSession(sid)
 
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 
+	//세션은 남아있는데 만료시간이 넘었다면 nil이 아닌 다른 err로 보내줘야됨
 	if sessionInfo.ExpireTime.Before(currentTime) {
 		return 0, nil
 	}

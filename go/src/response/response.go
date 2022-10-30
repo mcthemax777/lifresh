@@ -1,18 +1,28 @@
 package response
 
-import "models"
+import "lifresh/models"
 
 const (
 	FAIL_RES = iota
 	LOGIN_RES
 	SIGN_UP_RES
+	GET_USER_ALL_DATA_RES
 	GET_TODAY_RES
-	GET_CF_LIST_RES
-	ADD_CF_RES
-	ADD_TASK_PLAN_RES
-	ADD_TASK_RES
-	REMOVE_TASK_PLAN_RES
-	REMOVE_TASK_RES
+	GET_MAIN_CATEGORY_RES
+	GET_SUB_CATEGORY_RES
+	GET_SCHEDULE_TASK_RES
+	GET_TO_DO_TASK_RES
+	GET_MONEY_TASK_RES
+	ADD_MAIN_CATEGORY_RES
+	ADD_SUB_CATEGORY_RES
+	ADD_SCHEDULE_TASK_RES
+	ADD_TO_DO_TASK_RES
+	ADD_MONEY_TASK_RES
+	REMOVE_MAIN_CATEGORY_RES
+	REMOVE_SUB_CATEGORY_RES
+	REMOVE_SCHEDULE_TASK_RES
+	REMOVE_TO_DO_TASK_RES
+	REMOVE_MONEY_TASK_RES
 )
 
 type Response interface {
@@ -51,45 +61,54 @@ func CreateSuccessResponse(resType int) Response {
 		res.init(successCode, successMsg)
 
 		return &res
-		
-	case GET_TODAY_RES:
-		var res GetTodayInfoRes
-		res.init(successCode, successMsg)
 
-		return &res
-		
-	case GET_CF_LIST_RES:
-		var res GetCFListRes
+	case GET_USER_ALL_DATA_RES:
+		var res GetUserAllData
 		res.init(successCode, successMsg)
 
 		return &res
 
-	case ADD_CF_RES:
-		var res AddCFRes
+	case GET_MAIN_CATEGORY_RES:
+		var res GetMainCategoryRes
 		res.init(successCode, successMsg)
 
 		return &res
 
-	case ADD_TASK_PLAN_RES:
-		var res AddTaskPlanRes
+	case GET_SUB_CATEGORY_RES:
+		var res GetSubCategoryRes
 		res.init(successCode, successMsg)
 
 		return &res
 
-	case ADD_TASK_RES:
-		var res AddTaskRes
+	case GET_SCHEDULE_TASK_RES:
+		var res GetScheduleTaskRes
 		res.init(successCode, successMsg)
 
 		return &res
 
-	case REMOVE_TASK_PLAN_RES:
-		var res RemoveTaskPlanRes
+	case GET_TO_DO_TASK_RES:
+		var res GetToDoTaskRes
 		res.init(successCode, successMsg)
 
 		return &res
 
-	case REMOVE_TASK_RES:
-		var res RemoveTaskRes
+	case GET_MONEY_TASK_RES:
+		var res GetMoneyTaskRes
+		res.init(successCode, successMsg)
+
+		return &res
+
+	case ADD_MAIN_CATEGORY_RES,
+		ADD_SUB_CATEGORY_RES,
+		ADD_SCHEDULE_TASK_RES,
+		ADD_TO_DO_TASK_RES,
+		ADD_MONEY_TASK_RES,
+		REMOVE_MAIN_CATEGORY_RES,
+		REMOVE_SUB_CATEGORY_RES,
+		REMOVE_SCHEDULE_TASK_RES,
+		REMOVE_TO_DO_TASK_RES,
+		REMOVE_MONEY_TASK_RES:
+		var res BasicRes
 		res.init(successCode, successMsg)
 
 		return &res
@@ -107,14 +126,19 @@ func (res *FailRes) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }
 
+type BasicRes struct {
+	BaseResponse
+}
+
+func (res *BasicRes) init(code int, msg string) {
+	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+}
+
 type LoginRes struct {
 	BaseResponse
-	SessionId string `json:"sessionId"`
+	SessionId string         `json:"sessionId"`
 	Account   models.Account `json:"account"`
 	Planner   models.Planner `json:"planner"`
-	CFList	  []models.CF `json:"cfList"`
-	MCFList	  []models.MCF `json:"mcfList"`
-	DCFList	  []models.DCF `json:"dcfList"`
 }
 
 func (res *LoginRes) init(code int, msg string) {
@@ -129,69 +153,72 @@ func (res *SignUpRes) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }
 
-type GetCFListRes struct {
+type GetUserAllData struct {
 	BaseResponse
-	CFList  []models.CF  `json:"cfList"`
-	MCFList []models.MCF `json:"mcfList"`
-	DCFList []models.DCF `json:"dcfList"`
+	Planner          models.Planner        `json:"planner"`
+	TodayList        []models.Today        `json:"todayList"`
+	MainCategoryList []models.MainCategory `json:"mainCategoryList"`
+	SubCategoryList  []models.SubCategory  `json:"subCategoryList"`
+	ScheduleTaskList []models.ScheduleTask `json:"scheduleTaskList"`
+	ToDoTaskList     []models.ToDoTask     `json:"toDoTaskList"`
+	MoneyTaskList    []models.MoneyTask    `json:"moneyTaskList"`
 }
 
-func (res *GetCFListRes) init(code int, msg string) {
+func (res *GetUserAllData) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }
 
-type GetTodayInfoRes struct {
+type GetMainCategoryRes struct {
 	BaseResponse
-	Today 		models.Today `json:"today"`
-	TaskPlanList 	[]models.TaskPlan `json:"taskPlanList"`
-	TaskList	  	[]models.Task `json:"taskList"`
+	Planner          models.Planner        `json:"planner"`
+	TodayList        []models.Today        `json:"todayList"`
+	MainCategoryList []models.MainCategory `json:"mainCategoryList"`
 }
 
-func (res *GetTodayInfoRes) init(code int, msg string) {
+func (res *GetMainCategoryRes) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }
 
-type AddCFRes struct {
+type GetSubCategoryRes struct {
 	BaseResponse
-	CF	  models.CF `json:"cf"`
-	MCF	  models.MCF `json:"mcf"`
-	DCF	  models.DCF `json:"dcf"`
+	Planner         models.Planner       `json:"planner"`
+	TodayList       []models.Today       `json:"todayList"`
+	SubCategoryList []models.SubCategory `json:"subCategoryList"`
 }
 
-func (res *AddCFRes) init(code int, msg string) {
+func (res *GetSubCategoryRes) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }
 
-type AddTaskPlanRes struct {
+type GetScheduleTaskRes struct {
 	BaseResponse
-	TaskPlan	  models.TaskPlan `json:"taskPlan"`
+	Planner          models.Planner        `json:"planner"`
+	TodayList        []models.Today        `json:"todayList"`
+	ScheduleTaskList []models.ScheduleTask `json:"scheduleTaskList"`
 }
 
-func (res *AddTaskPlanRes) init(code int, msg string) {
+func (res *GetScheduleTaskRes) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }
 
-type AddTaskRes struct {
+type GetToDoTaskRes struct {
 	BaseResponse
-	Task	  models.Task `json:"task"`
+	Planner      models.Planner    `json:"planner"`
+	TodayList    []models.Today    `json:"todayList"`
+	ToDoTaskList []models.ToDoTask `json:"toDoTaskList"`
 }
 
-func (res *AddTaskRes) init(code int, msg string) {
+func (res *GetToDoTaskRes) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }
 
-type RemoveTaskPlanRes struct {
+type GetMoneyTaskRes struct {
 	BaseResponse
+	Planner       models.Planner     `json:"planner"`
+	TodayList     []models.Today     `json:"todayList"`
+	MoneyTaskList []models.MoneyTask `json:"moneyTaskList"`
 }
 
-func (res *RemoveTaskPlanRes) init(code int, msg string) {
-	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
-}
-
-type RemoveTaskRes struct {
-	BaseResponse
-}
-
-func (res *RemoveTaskRes) init(code int, msg string) {
+func (res *GetMoneyTaskRes) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }

@@ -1,10 +1,11 @@
 package db
 
 import (
-	"custom_time"
 	"errors"
 	"fmt"
-	"models"
+	"lifresh/custom_time"
+	"lifresh/define"
+	"lifresh/models"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -23,50 +24,26 @@ type DBInfo struct {
 	database string
 }
 
-// var localDbInfo = DBInfo{"root", "1234", "host.docker.internal:3306", "mysql", "Lifresh"}
-var localDbInfo = DBInfo{"root", "1234", "127.0.0.1:3306", "mysql", "Lifresh"}
-
-// type camelNamer struct
-// {
-
-// }
-
-// func (cm *camelNamer) ColumnName(table, column string) string {
-// 	return column
-// }
-
-// func (cm *camelNamer) TableName(table string) string {
-// 	return table
-// }
-
-// func (cm *camelNamer) JoinTableName(table string) string {
-// 	return table
-// }
-
-// func (cm *camelNamer) RelationshipFKName(ss schema.Relationship) string {
-// 	return ""
-// }
-
-// func (cm *camelNamer) CheckerName(table, column string) string {
-// 	return column
-// }
-
-// func (cm *camelNamer) IndexName(table, column string) string {
-// 	return column
-// }
-
 func init() {
-	//DBHandlerSG := DBHandlerImpl{}
+
+	var localDbInfo = DBInfo{"root", "1234", "host.docker.internal:3306", "mysql", "Lifresh"}
+
+	if define.OsType == define.OsTypeWindows {
+		localDbInfo = DBInfo{"root", "1234", "127.0.0.1:3306", "mysql", "Lifresh"}
+	}
+
 	dsn := localDbInfo.user + ":" + localDbInfo.pwd + "@tcp(" + localDbInfo.url + ")/" + localDbInfo.database + "?charset=utf8&parseTime=true"
+
 	result, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {
-		return ;
+		return
 	}
+
+	fmt.Println("db init all")
 
 	dbConn = result
 }
-
 
 // type DB interface {
 // 	connect()
@@ -102,7 +79,6 @@ type DBHandlerImpl struct {
 	//dbConn *gorm.DB
 }
 
-
 func (dh *DBHandlerImpl) Begin() *gorm.DB {
 	return dbConn.Begin()
 }
@@ -120,11 +96,11 @@ func (dh *DBHandlerImpl) InsertAccountAndPlanner(userId string, password string)
 	tx := dbConn.Begin()
 
 	if err := tx.Error; err != nil {
-	  	return err
+		return err
 	}
 
 	account := models.Account{UserId: userId, Password: password, CreateTime: custom_time.Now()}
-	
+
 	result := tx.Create(&account)
 
 	//account 생성
@@ -134,16 +110,15 @@ func (dh *DBHandlerImpl) InsertAccountAndPlanner(userId string, password string)
 	}
 
 	//planner 생성
-	result = tx.Create(&models.Planner {AccountNo: account.AccountNo, Title: "Planner"});
-	
-	if  result.Error != nil {
+	result = tx.Create(&models.Planner{AccountNo: account.AccountNo, Title: "Planner"})
+
+	if result.Error != nil {
 		tx.Rollback()
 		return result.Error
 	}
-  
+
 	return tx.Commit().Error
 }
-
 
 func (dh *DBHandlerImpl) GetAccountByUserId(userId string, password string) (models.Account, error) {
 
@@ -163,7 +138,7 @@ func (dh *DBHandlerImpl) Login(userId string, password string) error {
 	if err := dbConn.Where("userId = ?", userId).First(&account).Error; err != nil {
 		return err
 	}
-	
+
 	var planner models.Planner
 
 	if err := dbConn.Where("accountNo = ?", account.AccountNo).First(&planner).Error; err != nil {
@@ -174,7 +149,6 @@ func (dh *DBHandlerImpl) Login(userId string, password string) error {
 
 	return nil
 }
-
 
 func (dh *DBHandlerImpl) GetPlannerByAccountNo(accountNo int) (models.Planner, error) {
 
@@ -213,7 +187,6 @@ func (dh *DBHandlerImpl) GetTodayByPlannerNoAndTime(plannerNo int, myTime time.T
 	return today, nil
 }
 
-
 func (dh *DBHandlerImpl) GetTodayByTodayNo(todayNo int, plannerNo int) (models.Today, error) {
 
 	var today models.Today
@@ -222,95 +195,135 @@ func (dh *DBHandlerImpl) GetTodayByTodayNo(todayNo int, plannerNo int) (models.T
 	return today, nil
 }
 
+func (dh *DBHandlerImpl) GetTodayListByPlannerNo(plannerNo int) ([]models.Today, error) {
 
+	var list []models.Today
+	dbConn.Where("plannerNo = ?", plannerNo).Find(&list)
 
-func (dh *DBHandlerImpl) GetCFListByPlannerNo(plannerNo int) ([]models.CF, error) {
-
-	var cfList []models.CF
-	dbConn.Where("plannerNo = ?", plannerNo).Find(&cfList)
-
-	return cfList, nil
+	return list, nil
 }
 
-func (dh *DBHandlerImpl) GetMCFListByPlannerNo(plannerNo int) ([]models.MCF, error) {
+func (dh *DBHandlerImpl) GetMainCategoryListByPlannerNo(plannerNo int) ([]models.MainCategory, error) {
 
-	var mcfList []models.MCF
-	dbConn.Where("plannerNo = ?", plannerNo).Find(&mcfList)
+	var list []models.MainCategory
+	dbConn.Where("plannerNo = ?", plannerNo).Find(&list)
 
-	return mcfList, nil
+	return list, nil
 }
 
-func (dh *DBHandlerImpl) GetDCFListByPlannerNo(plannerNo int) ([]models.DCF, error) {
+func (dh *DBHandlerImpl) GetSubCategoryListByPlannerNo(plannerNo int) ([]models.SubCategory, error) {
 
-	var dcfList []models.DCF
-	dbConn.Where("plannerNo = ?", plannerNo).Find(&dcfList)
+	var list []models.SubCategory
+	dbConn.Where("plannerNo = ?", plannerNo).Find(&list)
 
-	return dcfList, nil
+	return list, nil
 }
 
-func (dh *DBHandlerImpl) GetTaskPlanListByToadyNoAndPlannerNo(todayNo int, plannerNo int) ([]models.TaskPlan, error) {
+func (dh *DBHandlerImpl) GetScheduleTaskListByPlannerNo(plannerNo int) ([]models.ScheduleTask, error) {
 
-	var taskPlanList []models.TaskPlan
-	dbConn.Where("plannerNo = ? and todayNo = ?", plannerNo, todayNo).Scan(&taskPlanList)
+	var list []models.ScheduleTask
+	dbConn.Where("plannerNo = ?", plannerNo).Find(&list)
 
-	return taskPlanList, nil
+	return list, nil
 }
 
-func (dh *DBHandlerImpl) GetTaskListByToadyNoAndPlannerNo(todayNo int, plannerNo int) ([]models.Task, error) {
+func (dh *DBHandlerImpl) GetToDoTaskListByPlannerNo(plannerNo int) ([]models.ToDoTask, error) {
 
-	var taskList []models.Task
-	dbConn.Where("plannerNo = ? and todayNo = ?", plannerNo, todayNo).Scan(&taskList)
+	var list []models.ToDoTask
+	dbConn.Where("plannerNo = ?", plannerNo).Find(&list)
 
-	return taskList, nil
+	return list, nil
 }
 
-func (dh *DBHandlerImpl) InsertCF(name string, plannerNo int) (int, error) {
+func (dh *DBHandlerImpl) GetMoneyTaskListByPlannerNo(plannerNo int) ([]models.MoneyTask, error) {
 
-	cf := models.CF{Name: name, PlannerNo: plannerNo}
+	var list []models.MoneyTask
+	dbConn.Where("plannerNo = ?", plannerNo).Find(&list)
 
-	result := dbConn.Create(&cf)
+	return list, nil
+}
 
-	//cf 생성
+func (dh *DBHandlerImpl) InsertMainCategory(mainCategory *[]models.MainCategory) error {
+
+	result := dbConn.Create(&mainCategory)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) InsertSubCategory(subCategory *[]models.SubCategory) error {
+
+	result := dbConn.Create(&subCategory)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) InsertScheduleTask(scheduleTask *[]models.ScheduleTask) error {
+
+	result := dbConn.Create(&scheduleTask)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) InsertToDoTask(toDoTask *[]models.ToDoTask) error {
+
+	result := dbConn.Create(&toDoTask)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) InsertMoneyTask(moneyTask *[]models.MoneyTask) error {
+
+	result := dbConn.Create(&moneyTask)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) UpdateMainCategory(mainCategory *[]models.MainCategory) error {
+
+	result := dbConn.Save(&mainCategory)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) UpdateMainCategoryList(mainCategory *[]models.MainCategory) (int, error) {
+
+	result := dbConn.Save(&mainCategory)
+
 	if result.Error != nil {
 		return 0, result.Error
 	}
 
-	return cf.CfNo, nil
+	return 0, nil
 }
 
-func (dh *DBHandlerImpl) InsertMCF(name string, cfNo int, plannerNo int) (int, error) {
+func (dh *DBHandlerImpl) UpdateSubCategory(subCategory *[]models.SubCategory) error {
 
-	mcf := models.MCF{Name: name, CfNo: cfNo, PlannerNo: plannerNo}
+	result := dbConn.Save(&subCategory)
 
-	result := dbConn.Create(&mcf)
-
-	//cf 생성
-	if result.Error != nil {
-		return 0, result.Error
-	}
-
-	return mcf.McfNo, nil
-}
-
-func (dh *DBHandlerImpl) InsertDCF(name string, mcfNo int, dcfType int, priority int, plannerNo int) (int, error) {
-
-	dcf := models.DCF{Name: name, McfNo: mcfNo, DcfType: dcfType, Priority: priority, PlannerNo: plannerNo}
-
-	result := dbConn.Create(&dcf)
-
-	//cf 생성
-	if result.Error != nil {
-		return 0, result.Error
-	}
-
-	return dcf.DcfNo, nil
-}
-
-func (dh *DBHandlerImpl) InsertTaskPlan(taskPlan *models.TaskPlan) error {
-
-	result := dbConn.Create(&taskPlan)
-
-	//tp 생성
 	if result.Error != nil {
 		return result.Error
 	}
@@ -318,12 +331,10 @@ func (dh *DBHandlerImpl) InsertTaskPlan(taskPlan *models.TaskPlan) error {
 	return nil
 }
 
+func (dh *DBHandlerImpl) UpdateScheduleTask(scheduleTask *[]models.ScheduleTask) error {
 
-func (dh *DBHandlerImpl) InsertTask(task *models.Task) error {
+	result := dbConn.Save(&scheduleTask)
 
-	result := dbConn.Create(&task)
-
-	//tp 생성
 	if result.Error != nil {
 		return result.Error
 	}
@@ -331,11 +342,10 @@ func (dh *DBHandlerImpl) InsertTask(task *models.Task) error {
 	return nil
 }
 
-func (dh *DBHandlerImpl) RemoveTaskPlan(taskPlan *models.TaskPlan) error {
+func (dh *DBHandlerImpl) UpdateToDoTask(toDoTask *[]models.ToDoTask) error {
 
-	result := dbConn.Delete(&taskPlan)
+	result := dbConn.Save(&toDoTask)
 
-	//tp 생성
 	if result.Error != nil {
 		return result.Error
 	}
@@ -343,11 +353,10 @@ func (dh *DBHandlerImpl) RemoveTaskPlan(taskPlan *models.TaskPlan) error {
 	return nil
 }
 
-func (dh *DBHandlerImpl) RemoveTask(task *models.Task) error {
+func (dh *DBHandlerImpl) UpdateMoneyTask(moneyTask *[]models.MoneyTask) error {
 
-	result := dbConn.Delete(&task)
+	result := dbConn.Save(&moneyTask)
 
-	//tp 생성
 	if result.Error != nil {
 		return result.Error
 	}
@@ -355,3 +364,62 @@ func (dh *DBHandlerImpl) RemoveTask(task *models.Task) error {
 	return nil
 }
 
+func (dh *DBHandlerImpl) DeleteMainCategoryList(plannerNo int, mainCategoryNoList []int) (error, error) {
+
+	result := dbConn.Where("plannerNo = ? AND mainCategoryNo IN ?", plannerNo, mainCategoryNoList).Delete(&models.MainCategory{})
+
+	//tp 생성
+	if result.Error != nil {
+		return result.Error, nil
+	}
+
+	return nil, nil
+}
+
+func (dh *DBHandlerImpl) DeleteSubCategoryList(plannerNo int, subCategoryNoList []int) (error, error) {
+
+	result := dbConn.Where("plannerNo = ? AND subCategoryNo IN ?", plannerNo, subCategoryNoList).Delete(&models.SubCategory{})
+
+	//tp 생성
+	if result.Error != nil {
+		return result.Error, nil
+	}
+
+	return nil, nil
+}
+
+func (dh *DBHandlerImpl) DeleteScheduleTaskList(plannerNo int, scheduleTaskNoList []int) (error, error) {
+
+	result := dbConn.Where("plannerNo = ? AND scheduleTaskNo IN ?", plannerNo, scheduleTaskNoList).Delete(&models.ScheduleTask{})
+
+	//tp 생성
+	if result.Error != nil {
+		return result.Error, nil
+	}
+
+	return nil, nil
+}
+
+func (dh *DBHandlerImpl) DeleteToDoTaskList(plannerNo int, toDoTaskNoList []int) (error, error) {
+
+	result := dbConn.Where("plannerNo = ? AND toDoTaskNo IN ?", plannerNo, toDoTaskNoList).Delete(&models.ToDoTask{})
+
+	//tp 생성
+	if result.Error != nil {
+		return result.Error, nil
+	}
+
+	return nil, nil
+}
+
+func (dh *DBHandlerImpl) DeleteMoneyTaskList(plannerNo int, moneyTaskNo []int) (error, error) {
+
+	result := dbConn.Where("plannerNo = ? AND moneyTaskNo IN ?", plannerNo, moneyTaskNo).Delete(&models.MoneyTask{})
+
+	//tp 생성
+	if result.Error != nil {
+		return result.Error, nil
+	}
+
+	return nil, nil
+}

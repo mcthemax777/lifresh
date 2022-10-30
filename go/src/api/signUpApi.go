@@ -1,16 +1,16 @@
 package api
 
 import (
-	"db"
 	"encoding/json"
-	"request"
-	"response"
+	"lifresh/db"
+	"lifresh/request"
+	"lifresh/response"
 )
 
-type signUpHandler struct {
+type SignUpHandler struct {
 }
 
-func (h signUpHandler) process(reqBody []byte) ([]byte, error) {
+func (h SignUpHandler) process(reqBody []byte) ([]byte, error) {
 	var req request.SignUpReq
 	err := json.Unmarshal(reqBody, &req)
 
@@ -27,7 +27,7 @@ func (h signUpHandler) process(reqBody []byte) ([]byte, error) {
 	//전송할 데이터 만들기
 	res := response.CreateSuccessResponse(response.SIGN_UP_RES)
 
-	signUpRes := res. (*response.SignUpRes)
+	signUpRes := res.(*response.SignUpRes)
 
 	return ResponseToByteArray(signUpRes), nil
 }

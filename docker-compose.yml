@@ -43,13 +43,57 @@ services:
         build:
             context: ./go
             dockerfile: dockerfile
+        ports:
+            - 8000:8000
         # db 컨테이너가 올라간 후 app 컨테이너를 올린다.
         depends_on:
             - lifreshdb
             - lifreshredis
+            - fluentd-client
         links:
             - lifreshdb
             - lifreshredis
+            - fluentd-client
+
+    # fluentd:
+    #     build: ./fluentd
+    #     volumes:
+    #         - ./fluentd/conf:/fluentd/etc
+    #     depends_on:
+    #         - "elasticsearch" 
+    #     links:
+    #         - "elasticsearch"
+    #     container_name: fluentd
+    #     ports:
+    #         - "24223:24223"
+    #         - "24223:24223/udp"
+
+    fluentd-client:
+        build: ./fluentd-client
+        volumes:
+            - ./fluentd-client/conf:/fluentd-client/etc
+        links:
+            - "fluentd"
+        container_name: fluentd-client
+        ports:
+            - "24224:24224"
+            - "24224:24224/udp"
+
+    # elasticsearch: 
+    #     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    #     environment: 
+    #         - "discovery.type=single-node" 
+    #     expose: 
+    #         - "9200" 
+    #     ports: 
+    #         - "9200:9200" 
+    
+    # kibana: 
+    #     image: kibana:7.17.0
+    #     depends_on: 
+    #         - "elasticsearch" 
+    #     ports: 
+    #         - "5601:5601"
 
     lifreshweb:
         container_name: lifreshweb
@@ -66,3 +110,17 @@ services:
         links:
             - lifreshapp
         restart: always
+
+    # lifreshdotnet:
+    #         # 컨테이너 이름 지정
+    #     container_name: lifreshdotnet
+    #     # 이미지 지정 - Official Images로 컨테이너를 생성
+    #     image: mcr.microsoft.com/dotnet/sdk:6.0
+    #     depends_on:
+    #         - lifreshdb
+    #         - lifreshredis
+    #     links:
+    #         - lifreshdb
+    #         - lifreshredis
+
+

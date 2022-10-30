@@ -1,11 +1,10 @@
+.vscode
 pem
 mysql/data
+go/.idea
 go/document
-go/src/github.com
-go/src/go.opentelemetry.io
-go/src/golang.org
-go/src/google.golang.org
-go/src/gopkg.in
-go/src/gorm.io
 go/pkg
-go/src.exe
+go/bin
+go/log
+go/lifresh.exe
+log

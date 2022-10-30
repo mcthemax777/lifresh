@@ -1,13 +1,10 @@
 package request
 
 import (
-	"custom_time"
-	"models"
+	"lifresh/models"
 )
 
-
 type Request interface {
-
 }
 
 type LoginReq struct {
@@ -20,56 +17,76 @@ type SignUpReq struct {
 	Password string `json:"password"`
 }
 
-type GetTodayInfoReq struct {
-	Sid string `json:"sid"` 
-	Time custom_time.CustomTime `json:"time"`
+type GetUserAllDataReq struct {
+	Sid string `json:"sid"`
 }
 
-type GetMonthInfoReq struct {
-	Sid string `json:"sid"` 
-	Time custom_time.CustomTime `json:"time"`
+type GetMainCategoryReq struct {
+	Sid string `json:"sid"`
 }
 
-type GetCFListReq struct {
-	Sid string `json:"sid"` 
+type GetSubCategoryReq struct {
+	Sid string `json:"sid"`
 }
 
-type AddCFListReq struct {
-	Sid string `json:"sid"` 
-	CF  models.CF  `json:"cf"`
-	MCF models.MCF `json:"mcf"`
-	DCF models.DCF `json:"dcf"`
+type GetScheduleTaskReq struct {
+	Sid string `json:"sid"`
 }
 
-type AddTaskPlanReq struct {
-	Sid string `json:"sid"` 
-	DCFNo     int `json:"dcfNo"`
-	StartTime custom_time.CustomTime `json:"startTime"`
-	FinishTime custom_time.CustomTime `json:"finishTime"`
-	Priority int    `json:"priority"`
-	TodayNo int    `json:"todayNo"`
+type GetToDoTaskReq struct {
+	Sid string `json:"sid"`
 }
 
-type AddTaskReq struct {
-	Sid string `json:"sid"` 
-	DCFNo     int `json:"dcfNo"`
-	StartTime custom_time.CustomTime `json:"startTime"`
-	FinishTime custom_time.CustomTime `json:"finishTime"`
-	Score int    `json:"score"`
-	Memo string    `json:"memo"`
-	TodayNo int    `json:"todayNo"`
+type GetMoneyTaskReq struct {
+	Sid string `json:"sid"`
 }
 
-type RemoveTaskPlanReq struct {
-	Sid string `json:"sid"` 
-	TaskPlanNo     int `json:"taskPlanNo"`
-	TodayNo int    `json:"todayNo"`
+type AddMainCategoryListReq struct {
+	Sid              string                `json:"sid"`
+	MainCategoryList []models.MainCategory `json:"mainCategoryList"`
 }
 
-type RemoveTaskReq struct {
-	Sid string `json:"sid"` 
-	TaskNo     int `json:"taskNo"`
-	TodayNo int    `json:"todayNo"`
+type AddSubCategoryListReq struct {
+	Sid             string               `json:"sid"`
+	SubCategoryList []models.SubCategory `json:"subCategoryList"`
 }
 
+type AddScheduleTaskListReq struct {
+	Sid              string                `json:"sid"`
+	ScheduleTaskList []models.ScheduleTask `json:"scheduleTaskList"`
+}
 
+type AddToDoTaskListReq struct {
+	Sid          string            `json:"sid"`
+	ToDoTaskList []models.ToDoTask `json:"todoTaskList"`
+}
+
+type AddMoneyTaskListReq struct {
+	Sid           string             `json:"sid"`
+	MoneyTaskList []models.MoneyTask `json:"moneyTaskList"`
+}
+
+type RemoveMainCategoryListReq struct {
+	Sid                string `json:"sid"`
+	MainCategoryNoList []int  `json:"mainCategoryNoList"`
+}
+
+type RemoveSubCategoryListReq struct {
+	Sid               string `json:"sid"`
+	SubCategoryNoList []int  `json:"subCategoryNoList"`
+}
+
+type RemoveScheduleTaskListReq struct {
+	Sid                string `json:"sid"`
+	ScheduleTaskNoList []int  `json:"subScheduleTaskNoList"`
+}
+
+type RemoveToDoTaskListReq struct {
+	Sid            string `json:"sid"`
+	ToDoTaskNoList []int  `json:"toDoTaskNoList"`
+}
+
+type RemoveMoneyTaskListReq struct {
+	Sid             string `json:"sid"`
+	MoneyTaskNoList []int  `json:"moneyTaskNoList"`
+}
