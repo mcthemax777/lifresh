@@ -1,6 +1,8 @@
-FROM golang:1.16
+FROM golang:1.18
 RUN go env -w GO111MODULE=auto
-#ENV GOPATH /go
+ENV GOPATH /app/go
+ENV GOROOT /usr/local/go
+
 #RUN go install
 WORKDIR /app/go
 
@@ -9,10 +11,15 @@ COPY . /app/go
 
 
 RUN apt-get update && apt-get upgrade -y
-RUN go get github.com/go-sql-driver/mysql
+
+
+WORKDIR /app/go/src
+
+RUN go mod tidy
+
 # Install the package
 #RUN go install -v github.com/go-sql-driver/mysql
 
-EXPOSE 3001
-RUN go build ./src/main.go
-CMD ["go", "run", "./src/main.go"]
+EXPOSE 8000
+RUN go build ./main.go
+CMD ["go", "run", "./main.go"]
