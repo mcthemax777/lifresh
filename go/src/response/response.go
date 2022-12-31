@@ -136,9 +136,9 @@ func (res *BasicRes) init(code int, msg string) {
 
 type LoginRes struct {
 	BaseResponse
-	SessionId string         `json:"sessionId"`
-	Account   models.Account `json:"account"`
-	Planner   models.Planner `json:"planner"`
+	Sid     string         `json:"sid"`
+	Account models.Account `json:"account"`
+	Planner models.Planner `json:"planner"`
 }
 
 func (res *LoginRes) init(code int, msg string) {

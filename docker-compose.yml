@@ -59,6 +59,8 @@ services:
             - lifreshdb
             - lifreshredis
             - fluentd-client
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
 
     # fluentd:
     #     build: ./fluentd

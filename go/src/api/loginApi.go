@@ -49,7 +49,7 @@ func (h LoginHandler) process(reqBody []byte) ([]byte, error) {
 	res := response.CreateSuccessResponse(response.LOGIN_RES)
 
 	loginRes := res.(*response.LoginRes)
-	loginRes.SessionId = sid
+	loginRes.Sid = sid
 	loginRes.Account = account
 	loginRes.Planner = planner
 
