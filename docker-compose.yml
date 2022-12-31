@@ -11,6 +11,11 @@ services:
             MYSQL_USER: test
             MYSQL_PASSWORD: 1234
             MYSQL_ROOT_PASSWORD: 1234
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.50'
+                    memory: 500M
         # 호스트에 있는 폴더를 컨테이너 안에 있는 폴더로 마운트
         volumes:
             - ./mysql/conf.d:/etc/mysql/conf.d
@@ -72,8 +77,8 @@ services:
         build: ./fluentd-client
         volumes:
             - ./fluentd-client/conf:/fluentd-client/etc
-        links:
-            - "fluentd"
+        # links:
+        #     - "fluentd"
         container_name: fluentd-client
         ports:
             - "24224:24224"
