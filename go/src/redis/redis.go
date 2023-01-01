@@ -91,7 +91,7 @@ type SessionInfo struct {
 	ExpireTime time.Time
 }
 
-func (dh RedisHandlerImpl) SetSession(sid string, accountNo int) error {
+func (dh RedisHandlerImpl) SetSession(userId string, sid string, accountNo int) error {
 
 	expireDuration, _ := time.ParseDuration("1h")
 
@@ -106,7 +106,7 @@ func (dh RedisHandlerImpl) SetSession(sid string, accountNo int) error {
 		return err
 	}
 
-	err = redisClient.Set(sid, string(value), expireDuration).Err()
+	err = redisClient.Set(userId, string(value), expireDuration).Err()
 
 	if err != nil {
 		return err
@@ -115,11 +115,11 @@ func (dh RedisHandlerImpl) SetSession(sid string, accountNo int) error {
 	return nil
 }
 
-func (dh RedisHandlerImpl) GetSession(sid string) (SessionInfo, error) {
+func (dh RedisHandlerImpl) GetSession(uid string) (SessionInfo, error) {
 
 	var sessionInfo SessionInfo
 
-	sessionInfoStr, err := redisClient.Get(sid).Result()
+	sessionInfoStr, err := redisClient.Get(uid).Result()
 
 	if err != nil {
 		return sessionInfo, err

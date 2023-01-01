@@ -136,6 +136,7 @@ func (res *BasicRes) init(code int, msg string) {
 
 type LoginRes struct {
 	BaseResponse
+	Uid     string         `json:"uid"`
 	Sid     string         `json:"sid"`
 	Account models.Account `json:"account"`
 	Planner models.Planner `json:"planner"`
@@ -214,9 +215,11 @@ func (res *GetToDoTaskRes) init(code int, msg string) {
 
 type GetMoneyTaskRes struct {
 	BaseResponse
-	Planner       models.Planner     `json:"planner"`
-	TodayList     []models.Today     `json:"todayList"`
-	MoneyTaskList []models.MoneyTask `json:"moneyTaskList"`
+	Planner          models.Planner        `json:"planner"`
+	TodayList        []models.Today        `json:"todayList"`
+	MainCategoryList []models.MainCategory `json:"mainCategoryList"`
+	SubCategoryList  []models.SubCategory  `json:"subCategoryList"`
+	MoneyTaskList    []models.MoneyTask    `json:"moneyTaskList"`
 }
 
 func (res *GetMoneyTaskRes) init(code int, msg string) {

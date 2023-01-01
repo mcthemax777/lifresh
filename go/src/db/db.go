@@ -211,6 +211,22 @@ func (dh *DBHandlerImpl) GetMainCategoryListByPlannerNo(plannerNo int) ([]models
 	return list, nil
 }
 
+func (dh *DBHandlerImpl) GetMainCategoryListByPlannerNoAndCategoryType(plannerNo int, categoryType int) ([]models.MainCategory, error) {
+
+	var list []models.MainCategory
+	dbConn.Where("plannerNo = ? and categoryType = ?", plannerNo, categoryType).Find(&list)
+
+	return list, nil
+}
+
+func (dh *DBHandlerImpl) GetSubCategoryListByPlannerNoAndMainCategoryNoList(plannerNo int, mainCategoryNoList []int) ([]models.SubCategory, error) {
+
+	var list []models.SubCategory
+	dbConn.Where("plannerNo = ? and mainCategoryNo in (?)", plannerNo, mainCategoryNoList).Find(&list)
+
+	return list, nil
+}
+
 func (dh *DBHandlerImpl) GetSubCategoryListByPlannerNo(plannerNo int) ([]models.SubCategory, error) {
 
 	var list []models.SubCategory

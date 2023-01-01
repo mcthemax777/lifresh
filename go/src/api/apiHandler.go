@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"lifresh/lflog"
 	"lifresh/redis"
@@ -20,7 +19,6 @@ var handlerMap map[string]apiHandler
 
 func init() {
 	handlerMap = make(map[string]apiHandler)
-	fmt.Println("api init all")
 	handlerMap["login"] = LoginHandler{}
 	handlerMap["signUp"] = SignUpHandler{}
 	handlerMap["getUserAllData"] = NewGetUserAllDataHandler()
@@ -59,7 +57,7 @@ func ApiCall(c *gin.Context) {
 	}
 
 	//받은 데이터 출력
-	//lflog.Logging(lflog.LogLevelInfo, string(body))
+	lflog.Logging(lflog.LogLevelInfo, string(body))
 
 	//기본 세팅(현재 시간, 유저 정보 등등...)
 
@@ -98,12 +96,17 @@ func NewSessionApiHandler() SessionApiHandler {
 	return sah
 }
 
-func (sah *SessionApiHandler) checkSession(sid string, currentTime time.Time) (userNo int, err error) {
+func (sah *SessionApiHandler) checkSession(uid string, sid string, currentTime time.Time) (userNo int, err error) {
 
-	sessionInfo, err := redis.RedisHandlerSG.GetSession(sid)
+	sessionInfo, err := redis.RedisHandlerSG.GetSession(uid)
 
 	if err != nil {
 		return 0, err
+	}
+
+	//세션이 다르면 err
+	if sessionInfo.Sid != sid {
+		return 0, nil
 	}
 
 	//세션은 남아있는데 만료시간이 넘었다면 nil이 아닌 다른 err로 보내줘야됨

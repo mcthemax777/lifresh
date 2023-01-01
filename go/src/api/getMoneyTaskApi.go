@@ -27,7 +27,7 @@ func (h GetMoneyTaskHandler) process(reqBody []byte) ([]byte, error) {
 
 	currentTime := CurrentTime()
 
-	accountNo, err := h.checkSession(req.Sid, currentTime)
+	accountNo, err := h.checkSession(req.Uid, req.Sid, currentTime)
 
 	//세션 만료
 	if err != nil {
@@ -49,12 +49,33 @@ func (h GetMoneyTaskHandler) process(reqBody []byte) ([]byte, error) {
 		return ResponseToByteArray(response.CreateFailResponse(301, "planner db error")), err
 	}
 
+	//category 가져오기
+	mainCategoryList, err := db.DBHandlerSG.GetMainCategoryListByPlannerNoAndCategoryType(planner.PlannerNo, 2)
+	if err != nil {
+		return ResponseToByteArray(response.CreateFailResponse(301, "GetMainCategoryListByPlannerNoAndCategoryType")), err
+	}
+
+	var mainCategoryNoList []int
+
+	for _, mainCategory := range mainCategoryList {
+
+		mainCategoryNoList = append(mainCategoryNoList, mainCategory.MainCategoryNo)
+
+	}
+
+	subCategoryList, err := db.DBHandlerSG.GetSubCategoryListByPlannerNoAndMainCategoryNoList(planner.PlannerNo, mainCategoryNoList)
+	if err != nil {
+		return ResponseToByteArray(response.CreateFailResponse(301, "GetMainCategoryListByPlannerNoAndMainCategoryNoList")), err
+	}
+
 	//전송할 데이터 만들기
 	res := response.CreateSuccessResponse(response.GET_MONEY_TASK_RES)
 
 	sendRes := res.(*response.GetMoneyTaskRes)
 	sendRes.Planner = planner
 	sendRes.TodayList = todayList
+	sendRes.MainCategoryList = mainCategoryList
+	sendRes.SubCategoryList = subCategoryList
 	sendRes.MoneyTaskList = moneyTaskList
 
 	return ResponseToByteArray(sendRes), nil

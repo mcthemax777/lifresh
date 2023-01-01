@@ -27,7 +27,7 @@ func (h GetToDoTaskHandler) process(reqBody []byte) ([]byte, error) {
 
 	currentTime := CurrentTime()
 
-	accountNo, err := h.checkSession(req.Sid, currentTime)
+	accountNo, err := h.checkSession(req.Uid, req.Sid, currentTime)
 
 	//세션 만료
 	if err != nil {

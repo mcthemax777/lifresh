@@ -39,7 +39,7 @@ func (h LoginHandler) process(reqBody []byte) ([]byte, error) {
 	sid := uuid.New().String()
 	sid = strings.Replace(sid, "-", "", -1)
 
-	err = redis.RedisHandlerSG.SetSession(sid, account.AccountNo)
+	err = redis.RedisHandlerSG.SetSession(req.UserId, sid, account.AccountNo)
 
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(301, "redis error")), err
@@ -49,6 +49,8 @@ func (h LoginHandler) process(reqBody []byte) ([]byte, error) {
 	res := response.CreateSuccessResponse(response.LOGIN_RES)
 
 	loginRes := res.(*response.LoginRes)
+	//임시로 userId 넣어줌(나중에 유니크한 아이디 생성해서 전달)
+	loginRes.Uid = req.UserId
 	loginRes.Sid = sid
 	loginRes.Account = account
 	loginRes.Planner = planner
