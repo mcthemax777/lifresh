@@ -34,8 +34,9 @@ func main() {
 	//}))
 	//router.Use(cors.Default())
 	router.Use(static.Serve("/", static.LocalFile("../html", true)))
+	router.Use(static.Serve("/Login", static.LocalFile("../html", true)))
+	router.Use(static.Serve("/Main", static.LocalFile("../html", true)))
 	// router.LoadHTMLGlob("templates/*")
-	//router.GET("/", hello)
 	router.POST("/api/:name", api.ApiCall)
 
 	router.Run(":8000")
