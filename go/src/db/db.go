@@ -211,10 +211,10 @@ func (dh *DBHandlerImpl) GetMainCategoryListByPlannerNo(plannerNo int) ([]models
 	return list, nil
 }
 
-func (dh *DBHandlerImpl) GetMainCategoryListByPlannerNoAndCategoryType(plannerNo int, categoryType int) ([]models.MainCategory, error) {
+func (dh *DBHandlerImpl) GetMainCategoryListByPlannerNoAndCategoryTypeList(plannerNo int, categoryTypeList []int) ([]models.MainCategory, error) {
 
 	var list []models.MainCategory
-	dbConn.Where("plannerNo = ? and categoryType = ?", plannerNo, categoryType).Find(&list)
+	dbConn.Where("plannerNo = ? and categoryType in (?)", plannerNo, categoryTypeList).Find(&list)
 
 	return list, nil
 }

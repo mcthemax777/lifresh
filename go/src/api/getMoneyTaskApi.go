@@ -50,9 +50,9 @@ func (h GetMoneyTaskHandler) process(reqBody []byte) ([]byte, error) {
 	}
 
 	//category 가져오기
-	mainCategoryList, err := db.DBHandlerSG.GetMainCategoryListByPlannerNoAndCategoryType(planner.PlannerNo, 2)
+	mainCategoryList, err := db.DBHandlerSG.GetMainCategoryListByPlannerNoAndCategoryTypeList(planner.PlannerNo, []int{0, 1})
 	if err != nil {
-		return ResponseToByteArray(response.CreateFailResponse(301, "GetMainCategoryListByPlannerNoAndCategoryType")), err
+		return ResponseToByteArray(response.CreateFailResponse(301, "GetMainCategoryListByPlannerNoAndCategoryTypeList")), err
 	}
 
 	var mainCategoryNoList []int
@@ -65,7 +65,7 @@ func (h GetMoneyTaskHandler) process(reqBody []byte) ([]byte, error) {
 
 	subCategoryList, err := db.DBHandlerSG.GetSubCategoryListByPlannerNoAndMainCategoryNoList(planner.PlannerNo, mainCategoryNoList)
 	if err != nil {
-		return ResponseToByteArray(response.CreateFailResponse(301, "GetMainCategoryListByPlannerNoAndMainCategoryNoList")), err
+		return ResponseToByteArray(response.CreateFailResponse(301, "GetSubCategoryListByPlannerNoAndMainCategoryNoList")), err
 	}
 
 	//전송할 데이터 만들기

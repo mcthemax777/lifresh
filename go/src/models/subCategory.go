@@ -5,6 +5,7 @@ type SubCategory struct {
 	MainCategoryNo int    `gorm:"column:mainCategoryNo" json:"mainCategoryNo"`
 	Name           string `gorm:"column:name" json:"name"`
 	PlannerNo      int    `gorm:"column:plannerNo" json:"_"`
+	Priority       int    `gorm:"column:priority" json:"priority"`
 }
 
 func (SubCategory) TableName() string {
