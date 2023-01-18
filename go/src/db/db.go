@@ -203,6 +203,14 @@ func (dh *DBHandlerImpl) GetTodayListByPlannerNo(plannerNo int) ([]models.Today,
 	return list, nil
 }
 
+func (dh *DBHandlerImpl) GetMoneyManagerListByPlannerNo(plannerNo int) ([]models.MoneyManager, error) {
+
+	var list []models.MoneyManager
+	dbConn.Where("plannerNo = ?", plannerNo).Find(&list)
+
+	return list, nil
+}
+
 func (dh *DBHandlerImpl) GetMainCategoryListByPlannerNo(plannerNo int) ([]models.MainCategory, error) {
 
 	var list []models.MainCategory
@@ -281,6 +289,17 @@ func (dh *DBHandlerImpl) InsertSubCategory(subCategory *[]models.SubCategory) er
 	return nil
 }
 
+func (dh *DBHandlerImpl) InsertMoneyManager(moneyManager *[]models.MoneyManager) error {
+
+	result := dbConn.Create(&moneyManager)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
 func (dh *DBHandlerImpl) InsertScheduleTask(scheduleTask *[]models.ScheduleTask) error {
 
 	result := dbConn.Create(&scheduleTask)
@@ -325,20 +344,20 @@ func (dh *DBHandlerImpl) UpdateMainCategory(mainCategory *[]models.MainCategory)
 	return nil
 }
 
-func (dh *DBHandlerImpl) UpdateMainCategoryList(mainCategory *[]models.MainCategory) (int, error) {
-
-	result := dbConn.Save(&mainCategory)
-
-	if result.Error != nil {
-		return 0, result.Error
-	}
-
-	return 0, nil
-}
-
 func (dh *DBHandlerImpl) UpdateSubCategory(subCategory *[]models.SubCategory) error {
 
 	result := dbConn.Save(&subCategory)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) UpdateMoneyManager(moneyManager *[]models.MoneyManager) error {
+
+	result := dbConn.Save(&moneyManager)
 
 	if result.Error != nil {
 		return result.Error

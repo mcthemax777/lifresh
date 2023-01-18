@@ -64,6 +64,12 @@ type AddSubCategoryListReq struct {
 	SubCategoryList []models.SubCategory `json:"subCategoryList"`
 }
 
+type AddMoneyManagerListReq struct {
+	Uid              string                `json:"uid"`
+	Sid              string                `json:"sid"`
+	MoneyManagerList []models.MoneyManager `json:"moneyManagerList"`
+}
+
 type AddScheduleTaskListReq struct {
 	Uid              string                `json:"uid"`
 	Sid              string                `json:"sid"`

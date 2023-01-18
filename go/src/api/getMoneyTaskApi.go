@@ -68,6 +68,12 @@ func (h GetMoneyTaskHandler) process(reqBody []byte) ([]byte, error) {
 		return ResponseToByteArray(response.CreateFailResponse(301, "GetSubCategoryListByPlannerNoAndMainCategoryNoList")), err
 	}
 
+	//자산 가져오기
+	moneyManagerList, err := db.DBHandlerSG.GetMoneyManagerListByPlannerNo(planner.PlannerNo)
+	if err != nil {
+		return ResponseToByteArray(response.CreateFailResponse(301, "GetMoneyManagerListByPlannerNo")), err
+	}
+
 	//전송할 데이터 만들기
 	res := response.CreateSuccessResponse(response.GET_MONEY_TASK_RES)
 
@@ -77,6 +83,7 @@ func (h GetMoneyTaskHandler) process(reqBody []byte) ([]byte, error) {
 	sendRes.MainCategoryList = mainCategoryList
 	sendRes.SubCategoryList = subCategoryList
 	sendRes.MoneyTaskList = moneyTaskList
+	sendRes.MoneyManagerList = moneyManagerList
 
 	return ResponseToByteArray(sendRes), nil
 }

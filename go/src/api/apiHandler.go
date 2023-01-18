@@ -29,6 +29,7 @@ func init() {
 	handlerMap["getMoneyTaskList"] = NewGetMoneyTaskHandler()
 	handlerMap["addMainCategoryList"] = NewAddMainCategoryListHandler()
 	handlerMap["addSubCategoryList"] = NewAddSubCategoryListHandler()
+	handlerMap["addMoneyManagerList"] = NewAddMoneyManagerListHandler()
 	handlerMap["addScheduleTaskList"] = NewAddScheduleTaskListHandler()
 	handlerMap["addToDoTaskList"] = NewAddToDoTaskListHandler()
 	handlerMap["addMoneyTaskList"] = NewAddMoneyTaskListHandler()

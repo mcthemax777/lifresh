@@ -15,6 +15,7 @@ const (
 	GET_MONEY_TASK_RES
 	ADD_MAIN_CATEGORY_RES
 	ADD_SUB_CATEGORY_RES
+	ADD_MONEY_MANAGER_RES
 	ADD_SCHEDULE_TASK_RES
 	ADD_TO_DO_TASK_RES
 	ADD_MONEY_TASK_RES
@@ -100,6 +101,7 @@ func CreateSuccessResponse(resType int) Response {
 
 	case ADD_MAIN_CATEGORY_RES,
 		ADD_SUB_CATEGORY_RES,
+		ADD_MONEY_MANAGER_RES,
 		ADD_SCHEDULE_TASK_RES,
 		ADD_TO_DO_TASK_RES,
 		ADD_MONEY_TASK_RES,
@@ -220,6 +222,7 @@ type GetMoneyTaskRes struct {
 	MainCategoryList []models.MainCategory `json:"mainCategoryList"`
 	SubCategoryList  []models.SubCategory  `json:"subCategoryList"`
 	MoneyTaskList    []models.MoneyTask    `json:"moneyTaskList"`
+	MoneyManagerList []models.MoneyManager `json:"moneyManagerList"`
 }
 
 func (res *GetMoneyTaskRes) init(code int, msg string) {

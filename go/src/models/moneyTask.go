@@ -11,6 +11,7 @@ type MoneyTask struct {
 	EndTime        custom_time.CustomTime `gorm:"column:endTime" json:"endTime"`
 	Money          int                    `gorm:"column:money" json:"money"`
 	Detail         string                 `gorm:"column:detail" json:"detail"`
+	MoneyManagerNo int                    `gorm:"column:moneyManagerNo" json:"moneyManagerNo"`
 	PlannerNo      int                    `gorm:"column:plannerNo" json:"plannerNo"`
 	TodayNo        int                    `gorm:"column:todayNo" json:"todayNo"`
 	Priority       int                    `gorm:"column:priority" json:"priority"`
