@@ -25,3 +25,8 @@ func init() {
 
 	fmt.Printf("os type - %d\n", OsType)
 }
+
+const (
+	CategoryTypeMoneyMinus = 0
+	CategoryTypeMoneyPlus  = 1
+)

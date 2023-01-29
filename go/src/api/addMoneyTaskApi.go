@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"lifresh/db"
+	"lifresh/define"
 	"lifresh/models"
 	"lifresh/request"
 	"lifresh/response"
@@ -44,6 +45,11 @@ func (h AddMoneyTaskListHandler) process(reqBody []byte) ([]byte, error) {
 	var insertList []models.MoneyTask
 	var updateList []models.MoneyTask
 
+	var updateMoneyTaskNoList []int
+	updateMoneyManagerList := make(map[int]int)
+
+	var updateMoneyManagerNoList []int
+
 	for _, moneyTask := range req.MoneyTaskList {
 
 		moneyTask.PlannerNo = planner.PlannerNo
@@ -56,7 +62,73 @@ func (h AddMoneyTaskListHandler) process(reqBody []byte) ([]byte, error) {
 		} else { //변경
 
 			updateList = append(updateList, moneyTask)
+			updateMoneyTaskNoList = append(updateMoneyTaskNoList, moneyTask.MoneyTaskNo)
 		}
+
+		money := moneyTask.Money
+
+		//지출일 경우 마이너스 추가
+		if moneyTask.CategoryType == define.CategoryTypeMoneyMinus {
+			money *= -1
+		}
+
+		//업데이트할 자산 저장
+		_, exists := updateMoneyManagerList[moneyTask.MoneyManagerNo]
+		if exists {
+			updateMoneyManagerList[moneyTask.MoneyManagerNo] += money
+		} else {
+			updateMoneyManagerList[moneyTask.MoneyManagerNo] = money
+		}
+
+		updateMoneyManagerNoList = append(updateMoneyManagerNoList, moneyTask.MoneyManagerNo)
+	}
+
+	//업데이트일 경우 자산금액 계산 다시하기
+	updateMoneyTaskList, err := db.DBHandlerSG.GetMoneyTaskListByPlannerNoAndMoneyTaskNoList(planner.PlannerNo, updateMoneyTaskNoList)
+
+	if err != nil {
+		return ResponseToByteArray(response.CreateFailResponse(201, "moneyManager not")), err
+	}
+
+	for _, moneyTask := range updateMoneyTaskList {
+
+		money := moneyTask.Money
+
+		//수입일 경우 마이너스 추가
+		if moneyTask.CategoryType == define.CategoryTypeMoneyPlus {
+			money *= -1
+		}
+
+		_, exists := updateMoneyManagerList[moneyTask.MoneyManagerNo]
+		if exists {
+			updateMoneyManagerList[moneyTask.MoneyManagerNo] += money
+		} else {
+			updateMoneyManagerList[moneyTask.MoneyManagerNo] = money
+		}
+
+		updateMoneyManagerNoList = append(updateMoneyManagerNoList, moneyTask.MoneyManagerNo)
+	}
+
+	//사용한 자산 확인
+	moneyManagerList, err := db.DBHandlerSG.GetMoneyManagerListByPlannerNoAndMoneyManagerNoList(planner.PlannerNo, updateMoneyManagerNoList)
+
+	if err != nil {
+		return ResponseToByteArray(response.CreateFailResponse(201, "moneyManager not")), err
+	}
+
+	for index, moneyManager := range moneyManagerList {
+
+		_, exists := updateMoneyManagerList[moneyManager.MoneyManagerNo]
+		if exists {
+			moneyManagerList[index].Money += updateMoneyManagerList[moneyManager.MoneyManagerNo]
+		} else {
+			return ResponseToByteArray(response.CreateFailResponse(201, "moneyManager not exist - "+string(rune(moneyManager.MoneyManagerNo)))), nil
+		}
+	}
+
+	err = db.DBHandlerSG.UpdateMoneyManager(&moneyManagerList)
+	if err != nil {
+		return ResponseToByteArray(response.CreateFailResponse(201, "UpdateMoneyManager")), err
 	}
 
 	if len(insertList) > 0 {

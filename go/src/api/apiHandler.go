@@ -115,6 +115,13 @@ func (sah *SessionApiHandler) checkSession(uid string, sid string, currentTime t
 		return 0, nil
 	}
 
+	//세션 기간 재설정
+	err = redis.RedisHandlerSG.SetSession(uid, sid, sessionInfo.AccountNo)
+
+	if err != nil {
+		return 0, err
+	}
+
 	return sessionInfo.AccountNo, nil
 }
 

@@ -5,6 +5,7 @@ type MoneyManager struct {
 	MoneyManagerType     int    `gorm:"column:moneyManagerType" json:"moneyManagerType"`
 	LinkedMoneyManagerNo int    `gorm:"column:linkedMoneyManagerNo" json:"linkedMoneyManagerNo"`
 	Money                int    `gorm:"column:money" json:"money"`
+	CreditMoney          int    `gorm:"column:creditMoney" json:"creditMoney"`
 	Name                 string `gorm:"column:name" json:"name"`
 	Detail               string `gorm:"column:detail" json:"detail"`
 	CalcDate             int    `gorm:"column:calcDate" json:"calcDate"`

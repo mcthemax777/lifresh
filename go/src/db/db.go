@@ -203,6 +203,14 @@ func (dh *DBHandlerImpl) GetTodayListByPlannerNo(plannerNo int) ([]models.Today,
 	return list, nil
 }
 
+func (dh *DBHandlerImpl) GetMoneyManagerListByPlannerNoAndMoneyManagerNoList(plannerNo int, moneyManagerNoList []int) ([]models.MoneyManager, error) {
+
+	var list []models.MoneyManager
+	dbConn.Where("plannerNo = ? and moneyManagerNo in (?)", plannerNo, moneyManagerNoList).Find(&list)
+
+	return list, nil
+}
+
 func (dh *DBHandlerImpl) GetMoneyManagerListByPlannerNo(plannerNo int) ([]models.MoneyManager, error) {
 
 	var list []models.MoneyManager
@@ -263,6 +271,14 @@ func (dh *DBHandlerImpl) GetMoneyTaskListByPlannerNo(plannerNo int) ([]models.Mo
 
 	var list []models.MoneyTask
 	dbConn.Where("plannerNo = ?", plannerNo).Find(&list)
+
+	return list, nil
+}
+
+func (dh *DBHandlerImpl) GetMoneyTaskListByPlannerNoAndMoneyTaskNoList(plannerNo int, moneyTaskNoList []int) ([]models.MoneyTask, error) {
+
+	var list []models.MoneyTask
+	dbConn.Where("plannerNo = ? and moneyTaskNo in (?)", plannerNo, moneyTaskNoList).Find(&list)
 
 	return list, nil
 }
