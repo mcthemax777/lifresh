@@ -46,7 +46,7 @@ func (h AddMainCategoryListHandler) process(reqBody []byte) ([]byte, error) {
 
 	for _, mainCategory := range req.MainCategoryList {
 
-		mainCategory.PlannerNo = planner.PlannerNo
+		mainCategory.PlannerNo = planner.PlannerId
 
 		//신규 등록
 		if mainCategory.MainCategoryNo == 0 {

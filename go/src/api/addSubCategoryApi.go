@@ -46,7 +46,7 @@ func (h AddSubCategoryListHandler) process(reqBody []byte) ([]byte, error) {
 
 	for _, subCategory := range req.SubCategoryList {
 
-		subCategory.PlannerNo = planner.PlannerNo
+		subCategory.PlannerNo = planner.PlannerId
 
 		//신규 등록
 		if subCategory.MainCategoryNo == 0 {

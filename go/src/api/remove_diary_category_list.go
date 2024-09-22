@@ -7,18 +7,18 @@ import (
 	"lifresh/response"
 )
 
-type RemoveMoneyTaskListHandler struct {
+type RemoveDiaryCategoryListHandler struct {
 	SessionApiHandler
 }
 
-func NewRemoveMoneyTaskListHandler() RemoveMoneyTaskListHandler {
-	h := RemoveMoneyTaskListHandler{SessionApiHandler: NewSessionApiHandler()}
+func NewRemoveDiaryCategoryListHandler() RemoveDiaryCategoryListHandler {
+	h := RemoveDiaryCategoryListHandler{SessionApiHandler: NewSessionApiHandler()}
 	return h
 }
 
-func (h RemoveMoneyTaskListHandler) process(reqBody []byte) ([]byte, error) {
+func (h RemoveDiaryCategoryListHandler) process(reqBody []byte) ([]byte, error) {
 
-	var req request.RemoveMoneyTaskListReq
+	var req request.RemoveDiaryCategoryListReq
 	err := json.Unmarshal(reqBody, &req)
 
 	if err != nil {
@@ -27,26 +27,26 @@ func (h RemoveMoneyTaskListHandler) process(reqBody []byte) ([]byte, error) {
 
 	currentTime := CurrentTime()
 
-	accountNo, err := h.checkSession(req.Uid, req.Sid, currentTime)
+	accountId, err := h.checkSession(req.Uid, req.Sid, currentTime)
 
 	//세션 만료
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(201, "session invalid")), err
 	}
 
-	planner, err := db.DBHandlerSG.GetPlannerByAccountNo(accountNo)
+	diary, err := db.DBHandlerSG.GetDiaryByAccountId(accountId)
 
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(201, "plannerNo not")), err
 	}
 
-	_, err = db.DBHandlerSG.DeleteMoneyTaskList(planner.PlannerId, req.MoneyTaskNoList)
+	err = db.DBHandlerSG.DeleteDiaryCategoryList(diary.DiaryId, req.DiaryCategoryIdList)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(201, "InsertCF")), err
 	}
 
 	//전송할 데이터 만들기
-	res := response.CreateSuccessResponse(response.REMOVE_MONEY_TASK_RES)
+	res := response.CreateSuccessResponse(response.REMOVE_DIARY_CATEGORY_RES)
 
 	return ResponseToByteArray(res.(*response.BasicRes)), nil
 }

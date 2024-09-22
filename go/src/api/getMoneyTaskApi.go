@@ -39,18 +39,18 @@ func (h GetMoneyTaskHandler) process(reqBody []byte) ([]byte, error) {
 		return ResponseToByteArray(response.CreateFailResponse(201, "plannerNo not")), err
 	}
 
-	todayList, err := db.DBHandlerSG.GetTodayListByPlannerNo(planner.PlannerNo)
+	todayList, err := db.DBHandlerSG.GetTodayListByPlannerNo(planner.PlannerId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(201, "GetTodayListByPlannerNo")), err
 	}
 
-	moneyTaskList, err := db.DBHandlerSG.GetMoneyTaskListByPlannerNo(planner.PlannerNo)
+	moneyTaskList, err := db.DBHandlerSG.GetMoneyTaskListByPlannerNo(planner.PlannerId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(301, "planner db error")), err
 	}
 
 	//category 가져오기
-	mainCategoryList, err := db.DBHandlerSG.GetMainCategoryListByPlannerNoAndCategoryTypeList(planner.PlannerNo, []int{0, 1})
+	mainCategoryList, err := db.DBHandlerSG.GetMainCategoryListByPlannerNoAndCategoryTypeList(planner.PlannerId, []int{0, 1})
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(301, "GetMainCategoryListByPlannerNoAndCategoryTypeList")), err
 	}
@@ -63,13 +63,13 @@ func (h GetMoneyTaskHandler) process(reqBody []byte) ([]byte, error) {
 
 	}
 
-	subCategoryList, err := db.DBHandlerSG.GetSubCategoryListByPlannerNoAndMainCategoryNoList(planner.PlannerNo, mainCategoryNoList)
+	subCategoryList, err := db.DBHandlerSG.GetSubCategoryListByPlannerNoAndMainCategoryNoList(planner.PlannerId, mainCategoryNoList)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(301, "GetSubCategoryListByPlannerNoAndMainCategoryNoList")), err
 	}
 
 	//자산 가져오기
-	moneyManagerList, err := db.DBHandlerSG.GetMoneyManagerListByPlannerNo(planner.PlannerNo)
+	moneyManagerList, err := db.DBHandlerSG.GetMoneyManagerListByPlannerNo(planner.PlannerId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(301, "GetMoneyManagerListByPlannerNo")), err
 	}

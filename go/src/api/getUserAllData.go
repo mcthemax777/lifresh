@@ -39,31 +39,31 @@ func (h GetUserAllDataHandler) process(reqBody []byte) ([]byte, error) {
 		return ResponseToByteArray(response.CreateFailResponse(201, "plannerNo not")), err
 	}
 
-	todayList, err := db.DBHandlerSG.GetTodayListByPlannerNo(planner.PlannerNo)
+	todayList, err := db.DBHandlerSG.GetTodayListByPlannerNo(planner.PlannerId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(201, "GetTodayListByPlannerNo")), err
 	}
 
 	//category 가져오기
-	mainCategoryList, err := db.DBHandlerSG.GetMainCategoryListByPlannerNo(planner.PlannerNo)
+	mainCategoryList, err := db.DBHandlerSG.GetMainCategoryListByPlannerNo(planner.PlannerId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(301, "GetMainCategoryListByPlannerNo")), err
 	}
-	subCategoryList, err := db.DBHandlerSG.GetSubCategoryListByPlannerNo(planner.PlannerNo)
+	subCategoryList, err := db.DBHandlerSG.GetSubCategoryListByPlannerNo(planner.PlannerId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(301, "GetSubCategoryListByPlannerNo")), err
 	}
 
 	//task 가져오기
-	scheduleTaskList, err := db.DBHandlerSG.GetScheduleTaskListByPlannerNo(planner.PlannerNo)
+	scheduleTaskList, err := db.DBHandlerSG.GetScheduleTaskListByPlannerNo(planner.PlannerId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(301, "planner db error")), err
 	}
-	toDoTaskList, err := db.DBHandlerSG.GetToDoTaskListByPlannerNo(planner.PlannerNo)
+	toDoTaskList, err := db.DBHandlerSG.GetToDoTaskListByPlannerNo(planner.PlannerId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(301, "planner db error")), err
 	}
-	moneyTaskList, err := db.DBHandlerSG.GetMoneyTaskListByPlannerNo(planner.PlannerNo)
+	moneyTaskList, err := db.DBHandlerSG.GetMoneyTaskListByPlannerNo(planner.PlannerId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(301, "planner db error")), err
 	}

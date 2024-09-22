@@ -39,12 +39,12 @@ func (h GetScheduleTaskHandler) process(reqBody []byte) ([]byte, error) {
 		return ResponseToByteArray(response.CreateFailResponse(201, "plannerNo not")), err
 	}
 
-	todayList, err := db.DBHandlerSG.GetTodayListByPlannerNo(planner.PlannerNo)
+	todayList, err := db.DBHandlerSG.GetTodayListByPlannerNo(planner.PlannerId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(201, "GetTodayListByPlannerNo")), err
 	}
 
-	scheduleTaskList, err := db.DBHandlerSG.GetScheduleTaskListByPlannerNo(planner.PlannerNo)
+	scheduleTaskList, err := db.DBHandlerSG.GetScheduleTaskListByPlannerNo(planner.PlannerId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(301, "planner db error")), err
 	}

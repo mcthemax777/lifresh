@@ -5,6 +5,6 @@ COPY /conf/* /fluentd/etc/
 
 USER root
 
-RUN gem uninstall -I elasticsearch && gem install elasticsearch -v 7.13.3
-RUN ["gem", "install", "fluent-plugin-elasticsearch", "--no-document", "--version", "5.0.5"]
+RUN gem uninstall -I elasticsearch && gem install elasticsearch -v 7.17.0
+RUN ["gem", "install", "fluent-plugin-elasticsearch", "--no-document", "--version", "5.0.3"]
 USER fluent

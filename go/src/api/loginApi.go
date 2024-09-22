@@ -7,6 +7,7 @@ import (
 	"lifresh/redis"
 	"lifresh/request"
 	"lifresh/response"
+	"strconv"
 	"strings"
 )
 
@@ -22,24 +23,25 @@ func (h LoginHandler) process(reqBody []byte) ([]byte, error) {
 		return ResponseToByteArray(response.CreateFailResponse(201, "invalid_json")), err
 	}
 
-	account, err := db.DBHandlerSG.GetAccountByUserId(req.UserId, req.Password)
+	account, err := db.DBHandlerSG.GetAccountBySocialToken(req.SocialType, req.SocialToken)
 
 	if err != nil {
-		return ResponseToByteArray(response.CreateFailResponse(202, "invalid_parameter")), err
+		if account.SocialType == 0 {
+			return ResponseToByteArray(response.CreateFailResponse(202, "invalid_parameter")), err
+		}
+
+		account, err = db.DBHandlerSG.InsertAccount(req.SocialType, req.SocialToken)
+		if err != nil {
+			return ResponseToByteArray(response.CreateFailResponse(202, "insert error")), err
+		}
 	}
 
-	//데이터 가져오기
-	planner, err := db.DBHandlerSG.GetPlannerByAccountNo(account.AccountNo)
-
-	if err != nil {
-		return ResponseToByteArray(response.CreateFailResponse(301, "planner db error")), err
-	}
-
+	uid := strconv.Itoa(req.SocialType) + "-" + req.SocialToken
 	//session id 생성
 	sid := uuid.New().String()
 	sid = strings.Replace(sid, "-", "", -1)
 
-	err = redis.RedisHandlerSG.SetSession(req.UserId, sid, account.AccountNo)
+	err = redis.RedisHandlerSG.SetSession(uid, sid, account.AccountId)
 
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(301, "redis error")), err
@@ -50,10 +52,9 @@ func (h LoginHandler) process(reqBody []byte) ([]byte, error) {
 
 	loginRes := res.(*response.LoginRes)
 	//임시로 userId 넣어줌(나중에 유니크한 아이디 생성해서 전달)
-	loginRes.Uid = req.UserId
+	loginRes.Uid = uid
 	loginRes.Sid = sid
 	loginRes.Account = account
-	loginRes.Planner = planner
 
 	return ResponseToByteArray(loginRes), nil
 }

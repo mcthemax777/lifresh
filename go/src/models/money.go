@@ -2,12 +2,12 @@ package models
 
 import "lifresh/custom_time"
 
-type Planner struct {
-	PlannerId  int                    `gorm:"primary_key" json:"planner_id"`
+type Money struct {
+	MoneyId    int                    `gorm:"primary_key" json:"money_id"`
 	AccountId  int                    `json:"account_id"`
 	UpdateDate custom_time.CustomTime `json:"update_date"`
 }
 
-func (Planner) TableName() string {
-	return "planner"
+func (Money) TableName() string {
+	return "money"
 }

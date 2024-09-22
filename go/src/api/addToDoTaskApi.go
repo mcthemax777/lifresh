@@ -46,7 +46,7 @@ func (h AddToDoTaskListHandler) process(reqBody []byte) ([]byte, error) {
 
 	for _, toDoTask := range req.ToDoTaskList {
 
-		toDoTask.PlannerNo = planner.PlannerNo
+		toDoTask.PlannerNo = planner.PlannerId
 
 		//신규 등록
 		if toDoTask.ToDoTaskNo == 0 {

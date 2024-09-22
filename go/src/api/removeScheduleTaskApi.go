@@ -40,7 +40,7 @@ func (h RemoveScheduleTaskListHandler) process(reqBody []byte) ([]byte, error) {
 		return ResponseToByteArray(response.CreateFailResponse(201, "plannerNo not")), err
 	}
 
-	_, err = db.DBHandlerSG.DeleteScheduleTaskList(planner.PlannerNo, req.ScheduleTaskNoList)
+	_, err = db.DBHandlerSG.DeleteScheduleTaskList(planner.PlannerId, req.ScheduleTaskNoList)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(201, "InsertCF")), err
 	}

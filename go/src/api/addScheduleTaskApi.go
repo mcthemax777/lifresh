@@ -46,7 +46,7 @@ func (h AddScheduleTaskListHandler) process(reqBody []byte) ([]byte, error) {
 
 	for _, scheduleTask := range req.ScheduleTaskList {
 
-		scheduleTask.PlannerNo = planner.PlannerNo
+		scheduleTask.PlannerNo = planner.PlannerId
 
 		//신규 등록
 		if scheduleTask.ScheduleTaskNo == 0 {

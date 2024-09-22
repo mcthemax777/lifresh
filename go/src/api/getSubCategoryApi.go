@@ -39,12 +39,12 @@ func (h GetSubCategoryHandler) process(reqBody []byte) ([]byte, error) {
 		return ResponseToByteArray(response.CreateFailResponse(201, "plannerNo not")), err
 	}
 
-	todayList, err := db.DBHandlerSG.GetTodayListByPlannerNo(planner.PlannerNo)
+	todayList, err := db.DBHandlerSG.GetTodayListByPlannerNo(planner.PlannerId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(201, "GetTodayListByPlannerNo")), err
 	}
 
-	subCategoryList, err := db.DBHandlerSG.GetSubCategoryListByPlannerNo(planner.PlannerNo)
+	subCategoryList, err := db.DBHandlerSG.GetSubCategoryListByPlannerNo(planner.PlannerId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(301, "GetSubCategoryListByPlannerNo")), err
 	}

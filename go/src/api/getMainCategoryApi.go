@@ -39,13 +39,13 @@ func (h GetMainCategoryHandler) process(reqBody []byte) ([]byte, error) {
 		return ResponseToByteArray(response.CreateFailResponse(201, "plannerNo not")), err
 	}
 
-	todayList, err := db.DBHandlerSG.GetTodayListByPlannerNo(planner.PlannerNo)
+	todayList, err := db.DBHandlerSG.GetTodayListByPlannerNo(planner.PlannerId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(201, "GetTodayListByPlannerNo")), err
 	}
 
 	//category 가져오기
-	mainCategoryList, err := db.DBHandlerSG.GetMainCategoryListByPlannerNo(planner.PlannerNo)
+	mainCategoryList, err := db.DBHandlerSG.GetMainCategoryListByPlannerNo(planner.PlannerId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(301, "GetMainCategoryListByPlannerNo")), err
 	}

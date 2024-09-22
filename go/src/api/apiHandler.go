@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"lifresh/lflog"
 	"lifresh/redis"
@@ -21,6 +22,11 @@ func init() {
 	handlerMap = make(map[string]apiHandler)
 	handlerMap["login"] = LoginHandler{}
 	handlerMap["signUp"] = SignUpHandler{}
+	handlerMap["getAccountAllData"] = NewGetAccountAllDataHandler()
+	handlerMap["addDiaryCategoryList"] = NewAddDiaryCategoryListHandler()
+	handlerMap["addDiaryHistoryList"] = NewAddDiaryHistoryListHandler()
+	handlerMap["removeDiaryCategoryList"] = NewRemoveDiaryCategoryListHandler()
+	handlerMap["removeDiaryHistoryList"] = NewRemoveDiaryHistoryListHandler()
 	handlerMap["getUserAllData"] = NewGetUserAllDataHandler()
 	handlerMap["getMainCategoryList"] = NewGetMainCategoryHandler()
 	handlerMap["getSubCategoryList"] = NewGetSubCategoryHandler()
@@ -107,22 +113,22 @@ func (sah *SessionApiHandler) checkSession(uid string, sid string, currentTime t
 
 	//세션이 다르면 err
 	if sessionInfo.Sid != sid {
-		return 0, nil
+		return 0, errors.New("session mismatch")
 	}
 
 	//세션은 남아있는데 만료시간이 넘었다면 nil이 아닌 다른 err로 보내줘야됨
 	if sessionInfo.ExpireTime.Before(currentTime) {
-		return 0, nil
+		return 0, errors.New("session expired")
 	}
 
 	//세션 기간 재설정
-	err = redis.RedisHandlerSG.SetSession(uid, sid, sessionInfo.AccountNo)
+	err = redis.RedisHandlerSG.SetSession(uid, sid, sessionInfo.AccountId)
 
 	if err != nil {
 		return 0, err
 	}
 
-	return sessionInfo.AccountNo, nil
+	return sessionInfo.AccountId, nil
 }
 
 func CurrentTime() time.Time {

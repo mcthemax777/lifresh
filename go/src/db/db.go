@@ -29,7 +29,7 @@ func init() {
 	var localDbInfo = DBInfo{"root", "1234", "host.docker.internal:3306", "mysql", "Lifresh"}
 
 	if define.OsType == define.OsTypeWindows {
-		localDbInfo = DBInfo{"root", "1234", "127.0.0.1:3306", "mysql", "Lifresh"}
+		localDbInfo = DBInfo{"root", "1234", "127.0.0.1:3307", "mysql", "lifresh"}
 	}
 
 	dsn := localDbInfo.user + ":" + localDbInfo.pwd + "@tcp(" + localDbInfo.url + ")/" + localDbInfo.database + "?charset=utf8&parseTime=true"
@@ -91,63 +91,250 @@ func (dh *DBHandlerImpl) Rollback(d *gorm.DB) {
 	d.Rollback()
 }
 
-func (dh *DBHandlerImpl) InsertAccountAndPlanner(userId string, password string) error {
-
+func (dh *DBHandlerImpl) InsertAccount(socialType int, socialToken string) (models.Account, error) {
+	account := models.Account{SocialType: socialType, SocialToken: socialToken, UpdateDate: custom_time.Now(), CreateDate: custom_time.Now()}
 	tx := dbConn.Begin()
 
 	if err := tx.Error; err != nil {
-		return err
+		return account, err
 	}
-
-	account := models.Account{UserId: userId, Password: password, CreateTime: custom_time.Now()}
 
 	result := tx.Create(&account)
 
 	//account 생성
 	if result.Error != nil {
 		tx.Rollback()
-		return result.Error
+		return account, result.Error
 	}
 
 	//planner 생성
-	result = tx.Create(&models.Planner{AccountNo: account.AccountNo, Title: "Planner"})
+	result = tx.Create(&models.Planner{AccountId: account.AccountId, UpdateDate: custom_time.Now()})
 
 	if result.Error != nil {
 		tx.Rollback()
-		return result.Error
+		return account, result.Error
 	}
 
-	return tx.Commit().Error
+	//money 생성
+	result = tx.Create(&models.Money{AccountId: account.AccountId, UpdateDate: custom_time.Now()})
+
+	if result.Error != nil {
+		tx.Rollback()
+		return account, result.Error
+	}
+
+	//diary 생성
+	result = tx.Create(&models.Diary{AccountId: account.AccountId, UpdateDate: custom_time.Now()})
+
+	if result.Error != nil {
+		tx.Rollback()
+		return account, result.Error
+	}
+
+	return account, tx.Commit().Error
 }
 
-func (dh *DBHandlerImpl) GetAccountByUserId(userId string, password string) (models.Account, error) {
+func (dh *DBHandlerImpl) GetAccountBySocialToken(socialType int, socialToken string) (models.Account, error) {
 
 	var account models.Account
 
-	if err := dbConn.Where("userId = ?", userId).First(&account).Error; err != nil {
+	tx := dbConn.Where("social_type = ? AND social_token = ?", socialType, socialToken)
+
+	if tx.Error != nil {
+		return account, tx.Error
+	}
+
+	account.SocialType = socialType
+	account.SocialToken = socialToken
+
+	if err := tx.Take(&account).Error; err != nil {
 		return account, err
 	}
 
 	return account, nil
 }
 
-func (dh *DBHandlerImpl) Login(userId string, password string) error {
+//func (dh *DBHandlerImpl) GetAccountByUserId(userId string, password string) (models.Account, error) {
+//
+//	var account models.Account
+//
+//	if err := dbConn.Where("userId = ?", userId).First(&account).Error; err != nil {
+//		return account, err
+//	}
+//
+//	return account, nil
+//}
 
-	var account models.Account
+//func (dh *DBHandlerImpl) Login(userId string, password string) error {
+//
+//	var account models.Account
+//
+//	if err := dbConn.Where("userId = ?", userId).First(&account).Error; err != nil {
+//		return err
+//	}
+//
+//	var planner models.Planner
+//
+//	if err := dbConn.Where("accountNo = ?", account.AccountNo).First(&planner).Error; err != nil {
+//		return err
+//	}
+//
+//	fmt.Println(planner.PlannerId)
+//
+//	return nil
+//}
 
-	if err := dbConn.Where("userId = ?", userId).First(&account).Error; err != nil {
-		return err
+func (dh *DBHandlerImpl) GetPlannerByAccountId(accountId int) (models.Planner, error) {
+
+	var p models.Planner
+	dbConn.Where("account_id = ?", accountId).First(&p)
+
+	if p.PlannerId == 0 {
+		fmt.Println("fuck")
+		return p, errors.New("not exist planner")
 	}
 
-	var planner models.Planner
+	return p, nil
+}
 
-	if err := dbConn.Where("accountNo = ?", account.AccountNo).First(&planner).Error; err != nil {
-		return err
+func (dh *DBHandlerImpl) GetMoneyByAccountId(accountId int) (models.Money, error) {
+
+	var p models.Money
+	dbConn.Where("account_id = ?", accountId).First(&p)
+
+	if p.MoneyId == 0 {
+		fmt.Println("fuck")
+		return p, errors.New("not exist money")
 	}
 
-	fmt.Println(planner.PlannerNo)
+	return p, nil
+}
+
+func (dh *DBHandlerImpl) GetDiaryByAccountId(accountId int) (models.Diary, error) {
+
+	var p models.Diary
+	dbConn.Where("account_id = ?", accountId).First(&p)
+
+	if p.DiaryId == 0 {
+		fmt.Println("fuck")
+		return p, errors.New("not exist Diary")
+	}
+
+	return p, nil
+}
+
+func (dh *DBHandlerImpl) GetPlanCategoryListByPlannerId(plannerId int) ([]models.PlanCategory, error) {
+
+	var list []models.PlanCategory
+	dbConn.Where("planner_id = ?", plannerId).Find(&list)
+
+	return list, nil
+}
+
+func (dh *DBHandlerImpl) GetPlanListByPlannerId(plannerId int) ([]models.Plan, error) {
+
+	var list []models.Plan
+	dbConn.Where("planner_id = ?", plannerId).Find(&list)
+
+	return list, nil
+}
+
+func (dh *DBHandlerImpl) GetPlanHistoryListByPlannerId(plannerId int) ([]models.PlanHistory, error) {
+
+	var list []models.PlanHistory
+	dbConn.Where("planner_id = ?", plannerId).Find(&list)
+
+	return list, nil
+}
+
+func (dh *DBHandlerImpl) GetMoneyCategoryListByMoneyId(moneyId int) ([]models.MoneyCategory, error) {
+
+	var list []models.MoneyCategory
+	dbConn.Where("money_id = ?", moneyId).Find(&list)
+
+	return list, nil
+}
+
+func (dh *DBHandlerImpl) GetMoneyHistoryListByMoneyId(moneyId int) ([]models.MoneyHistory, error) {
+
+	var list []models.MoneyHistory
+	dbConn.Where("money_id = ?", moneyId).Find(&list)
+
+	return list, nil
+}
+
+func (dh *DBHandlerImpl) GetDiaryCategoryListByMoneyId(diaryId int) ([]models.DiaryCategory, error) {
+
+	var list []models.DiaryCategory
+	dbConn.Where("diary_id = ?", diaryId).Find(&list)
+
+	return list, nil
+}
+
+func (dh *DBHandlerImpl) GetDiaryHistoryListByMoneyId(diaryId int) ([]models.DiaryHistory, error) {
+
+	var list []models.DiaryHistory
+	dbConn.Where("diary_id = ?", diaryId).Find(&list)
+
+	return list, nil
+}
+
+func (dh *DBHandlerImpl) InsertDiaryCategoryList(diaryCategoryList *[]models.DiaryCategory) error {
+
+	result := dbConn.Create(&diaryCategoryList)
+
+	if result.Error != nil {
+		return result.Error
+	}
 
 	return nil
+}
+
+func (dh *DBHandlerImpl) UpdateDiaryCategoryList(diaryCategoryList *[]models.DiaryCategory) error {
+
+	result := dbConn.Save(&diaryCategoryList)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) InsertDiaryHistoryList(diaryHistoryList *[]models.DiaryHistory) error {
+
+	result := dbConn.Create(&diaryHistoryList)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) UpdateDiaryHistoryList(diaryHistoryList *[]models.DiaryHistory) error {
+
+	result := dbConn.Save(&diaryHistoryList)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) DeleteDiaryCategoryList(diaryId int, diaryCategoryIdList []int) error {
+
+	result := dbConn.Where("diary_id = ? AND diary_category_id IN ?", diaryId, diaryCategoryIdList).Delete(&models.DiaryCategory{})
+
+	return result.Error
+}
+
+func (dh *DBHandlerImpl) DeleteDiaryHistoryList(diaryId int, diaryHistoryIdList []int) error {
+
+	result := dbConn.Where("diary_id = ? AND diary_history_id IN ?", diaryId, diaryHistoryIdList).Delete(&models.DiaryHistory{})
+
+	return result.Error
 }
 
 func (dh *DBHandlerImpl) GetPlannerByAccountNo(accountNo int) (models.Planner, error) {
@@ -155,7 +342,7 @@ func (dh *DBHandlerImpl) GetPlannerByAccountNo(accountNo int) (models.Planner, e
 	var p models.Planner
 	dbConn.Where("accountNo = ?", accountNo).First(&p)
 
-	if p.PlannerNo == 0 {
+	if p.PlannerId == 0 {
 		fmt.Println("fuck")
 		return p, errors.New("not exist planner")
 	}

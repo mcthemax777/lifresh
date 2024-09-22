@@ -40,7 +40,7 @@ func (h RemoveMainCategoryListHandler) process(reqBody []byte) ([]byte, error) {
 		return ResponseToByteArray(response.CreateFailResponse(201, "plannerNo not")), err
 	}
 
-	_, err = db.DBHandlerSG.DeleteMainCategoryList(planner.PlannerNo, req.MainCategoryNoList)
+	_, err = db.DBHandlerSG.DeleteMainCategoryList(planner.PlannerId, req.MainCategoryNoList)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(201, "InsertCF")), err
 	}

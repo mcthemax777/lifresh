@@ -40,7 +40,7 @@ func (h RemoveToDoTaskListHandler) process(reqBody []byte) ([]byte, error) {
 		return ResponseToByteArray(response.CreateFailResponse(201, "plannerNo not")), err
 	}
 
-	_, err = db.DBHandlerSG.DeleteToDoTaskList(planner.PlannerNo, req.ToDoTaskNoList)
+	_, err = db.DBHandlerSG.DeleteToDoTaskList(planner.PlannerId, req.ToDoTaskNoList)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(201, "InsertCF")), err
 	}

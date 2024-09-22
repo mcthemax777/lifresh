@@ -46,7 +46,7 @@ func (h AddMoneyManagerListHandler) process(reqBody []byte) ([]byte, error) {
 
 	for _, moneyManager := range req.MoneyManagerList {
 
-		moneyManager.PlannerNo = planner.PlannerNo
+		moneyManager.PlannerNo = planner.PlannerId
 
 		//신규 등록
 		if moneyManager.MoneyManagerNo == 0 {

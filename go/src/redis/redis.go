@@ -87,17 +87,17 @@ type RedisHandlerImpl struct {
 
 type SessionInfo struct {
 	Sid        string
-	AccountNo  int
+	AccountId  int
 	ExpireTime time.Time
 }
 
-func (dh RedisHandlerImpl) SetSession(uid string, sid string, accountNo int) error {
+func (dh RedisHandlerImpl) SetSession(uid string, sid string, accountId int) error {
 
 	expireDuration, _ := time.ParseDuration("1h")
 
 	var sessionInfo SessionInfo
 	sessionInfo.Sid = sid
-	sessionInfo.AccountNo = accountNo
+	sessionInfo.AccountId = accountId
 	sessionInfo.ExpireTime = time.Now().Add(expireDuration)
 
 	value, err := json.Marshal(sessionInfo)

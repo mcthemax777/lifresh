@@ -6,6 +6,11 @@ const (
 	FAIL_RES = iota
 	LOGIN_RES
 	SIGN_UP_RES
+	GET_ACCOUNT_ALL_DATA_RES
+	ADD_DIARY_CATEGORY_RES
+	ADD_DIARY_HISTORY_RES
+	REMOVE_DIARY_CATEGORY_RES
+	REMOVE_DIARY_HISTORY_RES
 	GET_USER_ALL_DATA_RES
 	GET_TODAY_RES
 	GET_MAIN_CATEGORY_RES
@@ -35,8 +40,8 @@ type Response interface {
 // }
 
 type BaseResponse struct {
-	ResultCode int    `json:"resultCode"`
-	ResultMsg  string `json:"resultMsg"`
+	ResultCode int    `json:"result_code"`
+	ResultMsg  string `json:"result_msg"`
 }
 
 func CreateFailResponse(code int, msg string) Response {
@@ -59,6 +64,11 @@ func CreateSuccessResponse(resType int) Response {
 
 	case SIGN_UP_RES:
 		var res SignUpRes
+		res.init(successCode, successMsg)
+
+		return &res
+	case GET_ACCOUNT_ALL_DATA_RES:
+		var res GetAccountAllData
 		res.init(successCode, successMsg)
 
 		return &res
@@ -99,24 +109,11 @@ func CreateSuccessResponse(resType int) Response {
 
 		return &res
 
-	case ADD_MAIN_CATEGORY_RES,
-		ADD_SUB_CATEGORY_RES,
-		ADD_MONEY_MANAGER_RES,
-		ADD_SCHEDULE_TASK_RES,
-		ADD_TO_DO_TASK_RES,
-		ADD_MONEY_TASK_RES,
-		REMOVE_MAIN_CATEGORY_RES,
-		REMOVE_SUB_CATEGORY_RES,
-		REMOVE_SCHEDULE_TASK_RES,
-		REMOVE_TO_DO_TASK_RES,
-		REMOVE_MONEY_TASK_RES:
+	default:
 		var res BasicRes
 		res.init(successCode, successMsg)
 
 		return &res
-
-	default:
-		return nil
 	}
 }
 
@@ -141,7 +138,6 @@ type LoginRes struct {
 	Uid     string         `json:"uid"`
 	Sid     string         `json:"sid"`
 	Account models.Account `json:"account"`
-	Planner models.Planner `json:"planner"`
 }
 
 func (res *LoginRes) init(code int, msg string) {
@@ -153,6 +149,26 @@ type SignUpRes struct {
 }
 
 func (res *SignUpRes) init(code int, msg string) {
+	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+}
+
+type GetAccountAllData struct {
+	BaseResponse
+	Planner          models.Planner        `json:"planner"`
+	PlanCategoryList []models.PlanCategory `json:"plan_category_list"`
+	PlanList         []models.Plan         `json:"plan_list"`
+	PlanHistoryList  []models.PlanHistory  `json:"plan_history_list"`
+
+	Money             models.Money           `json:"money"`
+	MoneyCategoryList []models.MoneyCategory `json:"money_category_list"`
+	MoneyHistoryList  []models.MoneyHistory  `json:"money_history_list"`
+
+	Diary             models.Diary           `json:"diary"`
+	DiaryCategoryList []models.DiaryCategory `json:"diary_category_list"`
+	DiaryHistoryList  []models.DiaryHistory  `json:"diary_history_list"`
+}
+
+func (res *GetAccountAllData) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }
 

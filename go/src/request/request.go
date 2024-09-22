@@ -13,13 +13,41 @@ type BaseRequest struct {
 }
 
 type LoginReq struct {
-	UserId   string `json:"userId"`
-	Password string `json:"password"`
+	SocialType  int    `json:"social_type"`
+	SocialToken string `json:"social_token"`
 }
 
 type SignUpReq struct {
 	UserId   string `json:"userId"`
 	Password string `json:"password"`
+}
+
+type GetAccountAllDataReq struct {
+	Uid string `json:"uid"`
+	Sid string `json:"sid"`
+}
+
+type AddDiaryCategoryListReq struct {
+	Uid               string                 `json:"uid"`
+	Sid               string                 `json:"sid"`
+	DiaryCategoryList []models.DiaryCategory `json:"diary_category_list"`
+}
+type AddDiaryHistoryListReq struct {
+	Uid              string                `json:"uid"`
+	Sid              string                `json:"sid"`
+	DiaryHistoryList []models.DiaryHistory `json:"diary_history_list"`
+}
+
+type RemoveDiaryCategoryListReq struct {
+	Uid                 string `json:"uid"`
+	Sid                 string `json:"sid"`
+	DiaryCategoryIdList []int  `json:"diary_category_id_list"`
+}
+
+type RemoveDiaryHistoryListReq struct {
+	Uid                string `json:"uid"`
+	Sid                string `json:"sid"`
+	DiaryHistoryIdList []int  `json:"diary_history_id_list"`
 }
 
 type GetUserAllDataReq struct {

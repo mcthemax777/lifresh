@@ -52,7 +52,7 @@ func (h AddMoneyTaskListHandler) process(reqBody []byte) ([]byte, error) {
 
 	for _, moneyTask := range req.MoneyTaskList {
 
-		moneyTask.PlannerNo = planner.PlannerNo
+		moneyTask.PlannerNo = planner.PlannerId
 
 		//신규 등록
 		if moneyTask.MoneyTaskNo == 0 {
@@ -84,7 +84,7 @@ func (h AddMoneyTaskListHandler) process(reqBody []byte) ([]byte, error) {
 	}
 
 	//업데이트일 경우 자산금액 계산 다시하기
-	updateMoneyTaskList, err := db.DBHandlerSG.GetMoneyTaskListByPlannerNoAndMoneyTaskNoList(planner.PlannerNo, updateMoneyTaskNoList)
+	updateMoneyTaskList, err := db.DBHandlerSG.GetMoneyTaskListByPlannerNoAndMoneyTaskNoList(planner.PlannerId, updateMoneyTaskNoList)
 
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(201, "moneyManager not")), err
@@ -110,7 +110,7 @@ func (h AddMoneyTaskListHandler) process(reqBody []byte) ([]byte, error) {
 	}
 
 	//사용한 자산 확인
-	moneyManagerList, err := db.DBHandlerSG.GetMoneyManagerListByPlannerNoAndMoneyManagerNoList(planner.PlannerNo, updateMoneyManagerNoList)
+	moneyManagerList, err := db.DBHandlerSG.GetMoneyManagerListByPlannerNoAndMoneyManagerNoList(planner.PlannerId, updateMoneyManagerNoList)
 
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(201, "moneyManager not")), err
