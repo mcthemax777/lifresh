@@ -7,10 +7,10 @@ services:
         image: mysql:8.0
         restart: always
         environment:
-            MYSQL_DATABASE: Lifresh
-            MYSQL_USER: Lifresh
-            MYSQL_PASSWORD: Lifresh
-            MYSQL_ROOT_PASSWORD: Lifresh
+            MYSQL_DATABASE: lifresh
+            MYSQL_USER: lifresh
+            MYSQL_PASSWORD: lifresh
+            MYSQL_ROOT_PASSWORD: lifresh
         deploy:
             resources:
                 limits:

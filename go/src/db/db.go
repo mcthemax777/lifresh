@@ -26,10 +26,10 @@ type DBInfo struct {
 
 func init() {
 
-	var localDbInfo = DBInfo{"root", "1234", "host.docker.internal:3306", "mysql", "Lifresh"}
+	var localDbInfo = DBInfo{"root", "lifresh", "host.docker.internal:3306", "mysql", "lifresh"}
 
 	if define.OsType == define.OsTypeWindows {
-		localDbInfo = DBInfo{"root", "1234", "127.0.0.1:3307", "mysql", "lifresh"}
+		localDbInfo = DBInfo{"root", "lifresh", "127.0.0.1:3306", "mysql", "lifresh"}
 	}
 
 	dsn := localDbInfo.user + ":" + localDbInfo.pwd + "@tcp(" + localDbInfo.url + ")/" + localDbInfo.database + "?charset=utf8&parseTime=true"
