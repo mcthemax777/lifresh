@@ -4,7 +4,7 @@ services:
         # 컨테이너 이름 지정
         container_name: lifreshdb
         # 이미지 지정 - Official Images로 컨테이너를 생성
-        image: mysql:5.7.27
+        image: mysql:8.0
         restart: always
         environment:
             MYSQL_DATABASE: Lifresh
