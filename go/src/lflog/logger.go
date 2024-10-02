@@ -32,7 +32,7 @@ func init() {
 		isActiveFluentd = false
 	} else {
 		logFile = "/var/log/app-%Y-%m-%d-%H.log"
-		isActiveFluentd = true
+		isActiveFluentd = false
 
 	}
 

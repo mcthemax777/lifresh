@@ -54,13 +54,13 @@ services:
         depends_on:
             - lifreshdb
             - lifreshredis
-            - fluentd-client
+            # - fluentd-client
         links:
             - lifreshdb
             - lifreshredis
-            - fluentd-client
+            # - fluentd-client
         extra_hosts:
-            - "host.docker.internal:host-gateway"
+            - host.docker.internal:host-gateway
 
     # fluentd:
     #     build: ./fluentd
@@ -75,16 +75,16 @@ services:
     #         - "24223:24223"
     #         - "24223:24223/udp"
 
-    fluentd-client:
-        build: ./fluentd-client
-        volumes:
-            - ./fluentd-client/conf:/fluentd-client/etc
-        # links:
-        #     - "fluentd"
-        container_name: fluentd-client
-        ports:
-            - "24224:24224"
-            - "24224:24224/udp"
+    # fluentd-client:
+    #     build: ./fluentd-client
+    #     volumes:
+    #         - ./fluentd-client/conf:/fluentd-client/etc
+    #     # links:
+    #     #     - "fluentd"
+    #     container_name: fluentd-client
+    #     ports:
+    #         - "24224:24224"
+    #         - "24224:24224/udp"
 
     # elasticsearch: 
     #     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
