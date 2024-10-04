@@ -154,6 +154,7 @@ func (res *SignUpRes) init(code int, msg string) {
 
 type GetAccountAllData struct {
 	BaseResponse
+	Profile          models.Profile        `json:"profile"`
 	Planner          models.Planner        `json:"planner"`
 	PlanCategoryList []models.PlanCategory `json:"plan_category_list"`
 	PlanList         []models.Plan         `json:"plan_list"`

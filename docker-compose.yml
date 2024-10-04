@@ -118,16 +118,15 @@ services:
             - lifreshapp
         restart: always
 
-    # lifreshdotnet:
-    #         # 컨테이너 이름 지정
-    #     container_name: lifreshdotnet
-    #     # 이미지 지정 - Official Images로 컨테이너를 생성
-    #     image: mcr.microsoft.com/dotnet/sdk:6.0
-    #     depends_on:
-    #         - lifreshdb
-    #         - lifreshredis
-    #     links:
-    #         - lifreshdb
-    #         - lifreshredis
-
-
+    jenkins:
+        image: jenkins/jenkins:lts
+        container_name: jenkins
+        environment:
+            - TZ=Asia/Seoul
+        user: root
+        volumes:
+        - /var/jenkins_home:/var/jenkins_home
+        - /var/run/docker.sock:/var/run/docker.sock
+        ports:
+        - 7777:8080
+        - 50000:50000

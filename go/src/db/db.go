@@ -184,6 +184,19 @@ func (dh *DBHandlerImpl) GetAccountBySocialToken(socialType int, socialToken str
 //	return nil
 //}
 
+func (dh *DBHandlerImpl) GetProfileByAccountId(accountId int) (models.Profile, error) {
+
+	var p models.Profile
+	dbConn.Where("account_id = ?", accountId).First(&p)
+
+	if p.ProfileId == 0 {
+		fmt.Println("fuck")
+		return p, errors.New("not exist profile")
+	}
+
+	return p, nil
+}
+
 func (dh *DBHandlerImpl) GetPlannerByAccountId(accountId int) (models.Planner, error) {
 
 	var p models.Planner

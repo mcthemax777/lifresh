@@ -34,6 +34,11 @@ func (h GetAccountAllDataHandler) process(reqBody []byte) ([]byte, error) {
 		return ResponseToByteArray(response.CreateFailResponse(201, err.Error())), err
 	}
 
+	profile, err := db.DBHandlerSG.GetProfileByAccountId(accountId)
+	if err != nil {
+		return ResponseToByteArray(response.CreateFailResponse(201, err.Error())), err
+	}
+
 	planner, err := db.DBHandlerSG.GetPlannerByAccountId(accountId)
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(201, err.Error())), err
@@ -81,6 +86,7 @@ func (h GetAccountAllDataHandler) process(reqBody []byte) ([]byte, error) {
 	res := response.CreateSuccessResponse(response.GET_ACCOUNT_ALL_DATA_RES)
 
 	sendRes := res.(*response.GetAccountAllData)
+	sendRes.Profile = profile
 	sendRes.Planner = planner
 	sendRes.PlanCategoryList = planCategoryList
 	sendRes.PlanList = planList
