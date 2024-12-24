@@ -23,13 +23,13 @@ func (h LoginHandler) process(reqBody []byte) ([]byte, error) {
 		return ResponseToByteArray(response.CreateFailResponse(201, "invalid_json")), err
 	}
 
+	if req.SocialType == 0 {
+		return ResponseToByteArray(response.CreateFailResponse(202, "invalid_parameter")), err
+	}
+
 	account, err := db.DBHandlerSG.GetAccountBySocialToken(req.SocialType, req.SocialToken)
 
 	if err != nil {
-		if account.SocialType == 0 {
-			return ResponseToByteArray(response.CreateFailResponse(202, "invalid_parameter")), err
-		}
-
 		account, err = db.DBHandlerSG.InsertAccount(req.SocialType, req.SocialToken)
 		if err != nil {
 			return ResponseToByteArray(response.CreateFailResponse(202, "insert error")), err
@@ -41,7 +41,7 @@ func (h LoginHandler) process(reqBody []byte) ([]byte, error) {
 	sid := uuid.New().String()
 	sid = strings.Replace(sid, "-", "", -1)
 
-	err = redis.RedisHandlerSG.SetSession(uid, sid, account.AccountId)
+	err = redis.RedisHandlerSG.SetSession(uid, sid, account.Id)
 
 	if err != nil {
 		return ResponseToByteArray(response.CreateFailResponse(301, "redis error")), err

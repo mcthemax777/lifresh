@@ -6,7 +6,9 @@ const (
 	FAIL_RES = iota
 	LOGIN_RES
 	SIGN_UP_RES
+	CREATE_USER_RES
 	GET_ACCOUNT_ALL_DATA_RES
+	ADD_PLAN_LIST_RES
 	ADD_DIARY_CATEGORY_RES
 	ADD_DIARY_HISTORY_RES
 	REMOVE_DIARY_CATEGORY_RES
@@ -64,6 +66,11 @@ func CreateSuccessResponse(resType int) Response {
 
 	case SIGN_UP_RES:
 		var res SignUpRes
+		res.init(successCode, successMsg)
+
+		return &res
+	case CREATE_USER_RES:
+		var res CreateUserRes
 		res.init(successCode, successMsg)
 
 		return &res
@@ -152,21 +159,21 @@ func (res *SignUpRes) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }
 
+type CreateUserRes struct {
+	BaseResponse
+}
+
+func (res *CreateUserRes) init(code int, msg string) {
+	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+}
+
 type GetAccountAllData struct {
 	BaseResponse
-	Profile          models.Profile        `json:"profile"`
-	Planner          models.Planner        `json:"planner"`
-	PlanCategoryList []models.PlanCategory `json:"plan_category_list"`
-	PlanList         []models.Plan         `json:"plan_list"`
-	PlanHistoryList  []models.PlanHistory  `json:"plan_history_list"`
-
-	Money             models.Money           `json:"money"`
-	MoneyCategoryList []models.MoneyCategory `json:"money_category_list"`
-	MoneyHistoryList  []models.MoneyHistory  `json:"money_history_list"`
-
-	Diary             models.Diary           `json:"diary"`
-	DiaryCategoryList []models.DiaryCategory `json:"diary_category_list"`
-	DiaryHistoryList  []models.DiaryHistory  `json:"diary_history_list"`
+	User                   models.User                 `json:"user"`
+	PlanList               []models.Plan               `json:"plan_list"`
+	PlanRecordList         []models.PlanRecord         `json:"plan_record_list"`
+	PlanRecordOperatorList []models.PlanRecordOperator `json:"plan_record_operator_list"`
+	PlanGoalList           []models.PlanGoal           `json:"plan_goal_list"`
 }
 
 func (res *GetAccountAllData) init(code int, msg string) {

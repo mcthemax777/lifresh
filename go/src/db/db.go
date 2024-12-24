@@ -29,7 +29,7 @@ func init() {
 	var localDbInfo = DBInfo{"root", "lifresh", "host.docker.internal:3306", "mysql", "lifresh"}
 
 	if define.OsType == define.OsTypeWindows {
-		localDbInfo = DBInfo{"root", "lifresh", "127.0.0.1:3306", "mysql", "lifresh"}
+		localDbInfo = DBInfo{"root", "lifresh", "127.0.0.1:3306", "mysql", "lifresh_planner"}
 	}
 
 	dsn := localDbInfo.user + ":" + localDbInfo.pwd + "@tcp(" + localDbInfo.url + ")/" + localDbInfo.database + "?charset=utf8&parseTime=true"
@@ -107,29 +107,29 @@ func (dh *DBHandlerImpl) InsertAccount(socialType int, socialToken string) (mode
 		return account, result.Error
 	}
 
-	//planner 생성
-	result = tx.Create(&models.Planner{AccountId: account.AccountId, UpdateDate: custom_time.Now()})
-
-	if result.Error != nil {
-		tx.Rollback()
-		return account, result.Error
-	}
-
-	//money 생성
-	result = tx.Create(&models.Money{AccountId: account.AccountId, UpdateDate: custom_time.Now()})
-
-	if result.Error != nil {
-		tx.Rollback()
-		return account, result.Error
-	}
-
-	//diary 생성
-	result = tx.Create(&models.Diary{AccountId: account.AccountId, UpdateDate: custom_time.Now()})
-
-	if result.Error != nil {
-		tx.Rollback()
-		return account, result.Error
-	}
+	////planner 생성
+	//result = tx.Create(&models.Planner{AccountId: account.AccountId, UpdateDate: custom_time.Now()})
+	//
+	//if result.Error != nil {
+	//	tx.Rollback()
+	//	return account, result.Error
+	//}
+	//
+	////money 생성
+	//result = tx.Create(&models.Money{AccountId: account.AccountId, UpdateDate: custom_time.Now()})
+	//
+	//if result.Error != nil {
+	//	tx.Rollback()
+	//	return account, result.Error
+	//}
+	//
+	////diary 생성
+	//result = tx.Create(&models.Diary{AccountId: account.AccountId, UpdateDate: custom_time.Now()})
+	//
+	//if result.Error != nil {
+	//	tx.Rollback()
+	//	return account, result.Error
+	//}
 
 	return account, tx.Commit().Error
 }
@@ -184,75 +184,216 @@ func (dh *DBHandlerImpl) GetAccountBySocialToken(socialType int, socialToken str
 //	return nil
 //}
 
-func (dh *DBHandlerImpl) GetProfileByAccountId(accountId int) (models.Profile, error) {
+func (dh *DBHandlerImpl) InsertUserAndRootFolder(accountId int, nickname string, rootFolderName string) (models.User, error) {
+	user := models.User{AccountId: accountId, Nickname: nickname, ProfileImageUrl: "", UpdateDate: custom_time.Now()}
+	tx := dbConn.Begin()
 
-	var p models.Profile
+	if err := tx.Error; err != nil {
+		return user, err
+	}
+
+	result := tx.Create(&user)
+
+	//user 생성
+	if result.Error != nil {
+		tx.Rollback()
+		return user, result.Error
+	}
+
+	//root plan 생성
+	result = tx.Create(&models.Plan{
+		UserId:         user.Id,
+		Name:           rootFolderName,
+		Description:    "",
+		RGBColor:       1000000000,
+		ParentId:       0,
+		Type:           0,
+		PermissionType: 0,
+		StartDate:      custom_time.Now(),
+		EndDate:        custom_time.Now(),
+		Sort:           0,
+		UpdateDate:     custom_time.Now(),
+	})
+
+	if result.Error != nil {
+		tx.Rollback()
+		return user, result.Error
+	}
+
+	return user, tx.Commit().Error
+}
+
+func (dh *DBHandlerImpl) GetUserByAccountId(accountId int) (models.User, error) {
+
+	var p models.User
 	dbConn.Where("account_id = ?", accountId).First(&p)
 
-	if p.ProfileId == 0 {
-		fmt.Println("fuck")
-		return p, errors.New("not exist profile")
+	if p.Id == 0 {
+		return p, errors.New("not exist user")
 	}
 
 	return p, nil
 }
 
-func (dh *DBHandlerImpl) GetPlannerByAccountId(accountId int) (models.Planner, error) {
+/// select
 
-	var p models.Planner
-	dbConn.Where("account_id = ?", accountId).First(&p)
-
-	if p.PlannerId == 0 {
-		fmt.Println("fuck")
-		return p, errors.New("not exist planner")
-	}
-
-	return p, nil
-}
-
-func (dh *DBHandlerImpl) GetMoneyByAccountId(accountId int) (models.Money, error) {
-
-	var p models.Money
-	dbConn.Where("account_id = ?", accountId).First(&p)
-
-	if p.MoneyId == 0 {
-		fmt.Println("fuck")
-		return p, errors.New("not exist money")
-	}
-
-	return p, nil
-}
-
-func (dh *DBHandlerImpl) GetDiaryByAccountId(accountId int) (models.Diary, error) {
-
-	var p models.Diary
-	dbConn.Where("account_id = ?", accountId).First(&p)
-
-	if p.DiaryId == 0 {
-		fmt.Println("fuck")
-		return p, errors.New("not exist Diary")
-	}
-
-	return p, nil
-}
-
-func (dh *DBHandlerImpl) GetPlanCategoryListByPlannerId(plannerId int) ([]models.PlanCategory, error) {
-
-	var list []models.PlanCategory
-	dbConn.Where("planner_id = ?", plannerId).Find(&list)
-
-	return list, nil
-}
-
-func (dh *DBHandlerImpl) GetPlanListByPlannerId(plannerId int) ([]models.Plan, error) {
+func (dh *DBHandlerImpl) GetPlanListByUserId(userId int) ([]models.Plan, error) {
 
 	var list []models.Plan
-	dbConn.Where("planner_id = ?", plannerId).Find(&list)
+	dbConn.Where("user_id = ?", userId).Find(&list)
 
 	return list, nil
 }
 
-func (dh *DBHandlerImpl) GetPlanHistoryListByPlannerId(plannerId int) ([]models.PlanHistory, error) {
+func (dh *DBHandlerImpl) GetPlanRecordListByUserId(userId int) ([]models.PlanRecord, error) {
+
+	var list []models.PlanRecord
+	dbConn.Where("user_id = ?", userId).Find(&list)
+
+	return list, nil
+}
+
+func (dh *DBHandlerImpl) GetPlanRecordOperatorListByUserId(userId int) ([]models.PlanRecordOperator, error) {
+
+	var list []models.PlanRecordOperator
+	dbConn.Where("user_id = ?", userId).Find(&list)
+
+	return list, nil
+}
+
+func (dh *DBHandlerImpl) GetPlanGoalListByUserId(userId int) ([]models.PlanGoal, error) {
+
+	var list []models.PlanGoal
+	dbConn.Where("user_id = ?", userId).Find(&list)
+
+	return list, nil
+}
+
+/// insert
+
+func (dh *DBHandlerImpl) InsertPlanList(planList *[]models.Plan) error {
+
+	result := dbConn.Create(&planList)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) InsertPlanRecordList(planRecordList *[]models.PlanRecord) error {
+
+	result := dbConn.Create(&planRecordList)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) InsertPlanRecordOperatorList(planRecordOperatorList *[]models.PlanRecordOperator) error {
+
+	result := dbConn.Create(&planRecordOperatorList)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) InsertPlanGoalList(planGoalList *[]models.PlanGoal) error {
+
+	result := dbConn.Create(&planGoalList)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+/// update
+
+func (dh *DBHandlerImpl) UpdatePlanList(planList *[]models.Plan) error {
+
+	result := dbConn.Save(&planList)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) UpdatePlanRecordList(planRecordList *[]models.PlanRecord) error {
+
+	result := dbConn.Save(&planRecordList)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) UpdatePlanRecordOperatorList(planRecordOperatorList *[]models.PlanRecordOperator) error {
+
+	result := dbConn.Save(&planRecordOperatorList)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (dh *DBHandlerImpl) UpdatePlanGoalList(planGoalList *[]models.PlanGoal) error {
+
+	result := dbConn.Save(&planGoalList)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+/// delete
+
+func (dh *DBHandlerImpl) DeletePlanList(userId int, planIdList []int) error {
+
+	result := dbConn.Where("user_id = ? AND id IN ?", userId, planIdList).Delete(&models.Plan{})
+
+	return result.Error
+}
+
+func (dh *DBHandlerImpl) DeletePlanRecordList(userId int, planRecordIdList []int) error {
+
+	result := dbConn.Where("user_id = ? AND id IN ?", userId, planRecordIdList).Delete(&models.PlanRecord{})
+
+	return result.Error
+}
+
+func (dh *DBHandlerImpl) DeletePlanRecordOperatorList(userId int, planRecordOperatorIdList []int) error {
+
+	result := dbConn.Where("user_id = ? AND id IN ?", userId, planRecordOperatorIdList).Delete(&models.PlanRecordOperator{})
+
+	return result.Error
+}
+
+func (dh *DBHandlerImpl) DeletePlanGoalList(userId int, planGoalIdList []int) error {
+
+	result := dbConn.Where("user_id = ? AND id IN ?", userId, planGoalIdList).Delete(&models.PlanGoal{})
+
+	return result.Error
+}
+
+/// 안씀
+
+func (dh *DBHandlerImpl) GetPlanHistoryListByUserId(plannerId int) ([]models.PlanHistory, error) {
 
 	var list []models.PlanHistory
 	dbConn.Where("planner_id = ?", plannerId).Find(&list)

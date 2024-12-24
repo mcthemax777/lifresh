@@ -3,21 +3,18 @@ package models
 import "lifresh/custom_time"
 
 type Plan struct {
-	PlanId                int                    `gorm:"primary_key" json:"plan_id"`
-	PlannerId             int                    `json:"planner_id"`
-	PlanCategoryId        int                    `json:"plan_category_id"`
-	Name                  string                 `json:"name"`
-	RGBColor              string                 `json:"rgb_color"`
-	Priority              int                    `json:"priority"`
-	RepeatType            int                    `json:"repeat_type"`
-	RepeatValueList       string                 `json:"repeat_value_list"`
-	RecordTypeList        string                 `json:"record_type_list"`
-	RecordCombineTypeList string                 `json:"record_combine_type_list"`
-	DisplayRecordType     int                    `json:"display_record_type"`
-	StartDate             custom_time.CustomTime `json:"start_date"`
-	FinishDate            custom_time.CustomTime `json:"finish_date"`
-	OpenFlag              int                    `json:"open_flag"`
-	UpdateDate            custom_time.CustomTime `json:"update_date"`
+	Id             int                    `gorm:"primary_key" json:"id"`
+	UserId         int                    `json:"user_id"`
+	Name           string                 `json:"name"`
+	Description    string                 `json:"description"`
+	RGBColor       int                    `json:"rgb_color"`
+	ParentId       int                    `json:"parent_id"`
+	Type           int                    `json:"type"`
+	PermissionType int                    `json:"permission_type"`
+	StartDate      custom_time.CustomTime `json:"start_date"`
+	EndDate        custom_time.CustomTime `json:"finish_date"`
+	Sort           int                    `json:"sort"`
+	UpdateDate     custom_time.CustomTime `json:"update_date"`
 }
 
 func (Plan) TableName() string {
