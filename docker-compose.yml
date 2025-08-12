@@ -7,7 +7,7 @@ services:
         image: mysql:8.0
         restart: always
         environment:
-            MYSQL_DATABASE: lifresh
+            MYSQL_DATABASE: lifresh_planner
             MYSQL_USER: lifresh
             MYSQL_PASSWORD: lifresh
             MYSQL_ROOT_PASSWORD: lifresh
@@ -111,12 +111,19 @@ services:
             - lifreshapp
         volumes:
             - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+            - ./certbot/www:/var/www/certbot
+            - ./certbot/conf:/etc/letsencrypt
         ports:
             - "80:80"
             - "443:443"
         links:
             - lifreshapp
         restart: always
+    certbot:
+        image: certbot/certbot
+        volumes:
+            - ./certbot/conf:/etc/letsencrypt
+            - ./certbot/www:/var/www/certbot
 
     jenkins:
         image: jenkins/jenkins:lts
