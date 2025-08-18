@@ -27,13 +27,12 @@ func init() {
 
 	logFile := ""
 	// initialize the rotator
-	if define.OsType == define.OsTypeWindows {
+	if define.OsType == define.OsTypeWindows || define.OsType == define.OsTypeMac {
 		logFile = "./log/app-%Y-%m-%d-%H.log"
 		isActiveFluentd = false
 	} else {
 		logFile = "/var/log/app-%Y-%m-%d-%H.log"
 		isActiveFluentd = false
-
 	}
 
 	rotator, err := rotatelogs.New(

@@ -5,6 +5,7 @@ import "lifresh/models"
 const (
 	FAIL_RES = iota
 	LOGIN_RES
+	REFRESH_RES
 	SIGN_UP_RES
 	CREATE_USER_RES
 	GET_ACCOUNT_ALL_DATA_RES
@@ -142,12 +143,24 @@ func (res *BasicRes) init(code int, msg string) {
 
 type LoginRes struct {
 	BaseResponse
-	Uid     string         `json:"uid"`
-	Sid     string         `json:"sid"`
-	Account models.Account `json:"account"`
+	Uid string `json:"uid"`
+	//Sid     string         `json:"sid"`
+	AccessToken  string         `json:"access_token"`
+	RefreshToken string         `json:"refresh_token"`
+	Account      models.Account `json:"account"`
 }
 
 func (res *LoginRes) init(code int, msg string) {
+	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+}
+
+type RefreshRes struct {
+	BaseResponse
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+func (res *RefreshRes) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }
 

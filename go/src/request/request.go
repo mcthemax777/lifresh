@@ -17,6 +17,10 @@ type LoginReq struct {
 	SocialToken string `json:"social_token"`
 }
 
+type RefreshReq struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
 type SignUpReq struct {
 	Nickname       string `json:"nickname"`
 	RootFolderName string `json:"root_folder_name"`

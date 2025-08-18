@@ -57,8 +57,8 @@ func init() {
 
 	var localRedisInfo = RedisInfo{"root", "1234", "host.docker.internal:6379", "mysql", "Lifresh"}
 
-	if define.OsType == define.OsTypeWindows {
-		localRedisInfo = RedisInfo{"root", "1234", "localhost:6379", "mysql", "Lifresh"}
+	if define.OsType == define.OsTypeWindows || define.OsType == define.OsTypeMac {
+		localRedisInfo = RedisInfo{"root", "1234", "localhost:6379", "mysql", "lifresh"}
 	}
 
 	client := redis.NewClient(&redis.Options{

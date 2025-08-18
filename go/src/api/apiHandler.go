@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"lifresh/define"
 	"lifresh/lflog"
 	"lifresh/redis"
 	"lifresh/response"
@@ -13,18 +14,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var handlerMap map[string]apiHandler
+var HandlerMap map[string]BaseHandler
 
 //var logError error
 //var logger *fluent.Fluent
 
 func init() {
-	handlerMap = make(map[string]apiHandler)
-	handlerMap["login"] = LoginHandler{}
-	handlerMap["signUp"] = SignUpHandler{}
-	handlerMap["createUser"] = NewCreateUserHandler()
-	handlerMap["getAccountAllData"] = NewGetAccountAllDataHandler()
-	handlerMap["addPlanList"] = NewAddPlanListHandler()
+	HandlerMap = make(map[string]BaseHandler)
+	HandlerMap[define.ApiLogin] = LoginHandler{}
+	HandlerMap[define.ApiRefresh] = RefreshHandler{}
+	//handlerMap["signUp"] = SignUpHandler{}
+	//handlerMap["createUser"] = NewCreateUserHandler()
+	//handlerMap["getAccountAllData"] = NewGetAccountAllDataHandler()
+	//handlerMap["addPlanList"] = NewAddPlanListHandler()
 	//handlerMap["addPlanRecordList"] = NewGetAccountAllDataHandler()
 	//handlerMap["addPlanRecordOperatorList"] = NewGetAccountAllDataHandler()
 	//handlerMap["addPlanGoalList"] = NewGetAccountAllDataHandler()
@@ -54,15 +56,7 @@ func init() {
 	//handlerMap["removeToDoTaskList"] = NewRemoveToDoTaskListHandler()
 	//handlerMap["removeMoneyTaskList"] = NewRemoveMoneyTaskListHandler()
 }
-
-func ApiCall(c *gin.Context) {
-
-	handler := handlerMap[c.Param("name")]
-
-	if handler == nil {
-		lflog.Logging(lflog.LogLevelPanic, "not exist handler")
-		return
-	}
+func ApiCall(c *gin.Context, process func(b []byte) ([]byte, error)) {
 
 	body, err := ioutil.ReadAll(c.Request.Body)
 
@@ -75,10 +69,8 @@ func ApiCall(c *gin.Context) {
 	//받은 데이터 출력
 	lflog.Logging(lflog.LogLevelInfo, string(body))
 
-	//기본 세팅(현재 시간, 유저 정보 등등...)
-
 	//로직 실행
-	res, err := handler.process(body)
+	res, err := process(body)
 
 	if err != nil {
 		lflog.Logging(lflog.LogLevelInfo, err.Error())
@@ -91,9 +83,77 @@ func ApiCall(c *gin.Context) {
 	c.String(http.StatusOK, string(res))
 }
 
-type apiHandler interface {
-	process(reqBody []byte) ([]byte, error)
+type BaseHandler interface {
+	ApiCall(c *gin.Context)
 }
+
+type ApiHandler struct {
+	authHandler AuthHandler
+}
+
+func (ah *ApiHandler) apiCall(c *gin.Context, process func(accountId int, b []byte) ([]byte, error)) {
+	body, err := ioutil.ReadAll(c.Request.Body)
+
+	if err != nil {
+		lflog.Logging(lflog.LogLevelInfo, err.Error())
+		c.String(http.StatusOK, string(ResponseToByteArray(response.CreateFailResponse(301, "body error"))))
+		return
+	}
+
+	//받은 데이터 출력
+	lflog.Logging(lflog.LogLevelInfo, string(body))
+
+	//기본 세팅(현재 시간, 유저 정보 등등...)
+	accountId := c.GetInt("account_id")
+
+	//로직 실행
+	res, err := process(accountId, body)
+
+	if err != nil {
+		lflog.Logging(lflog.LogLevelInfo, err.Error())
+	}
+
+	resultLog := "{\"input\":" + string(body) + ", \"output\":" + string(res) + "}"
+
+	lflog.Logging(lflog.LogLevelInfo, resultLog)
+
+	c.String(http.StatusOK, string(res))
+}
+
+type AuthHandler struct {
+}
+
+func (ah *AuthHandler) apiCall(c *gin.Context, process func(b []byte) ([]byte, error)) {
+
+	body, err := ioutil.ReadAll(c.Request.Body)
+
+	if err != nil {
+		lflog.Logging(lflog.LogLevelInfo, err.Error())
+		c.String(http.StatusOK, string(ResponseToByteArray(response.CreateFailResponse(301, "body error"))))
+		return
+	}
+
+	//받은 데이터 출력
+	lflog.Logging(lflog.LogLevelInfo, string(body))
+
+	//로직 실행
+	res, err := process(body)
+
+	if err != nil {
+		lflog.Logging(lflog.LogLevelInfo, err.Error())
+	}
+
+	resultLog := "{\"input\":" + string(body) + ", \"output\":" + string(res) + "}"
+
+	lflog.Logging(lflog.LogLevelInfo, resultLog)
+
+	c.String(http.StatusOK, string(res))
+}
+
+//
+//type apiHandler interface {
+//	process(reqBody []byte) ([]byte, error)
+//}
 
 func ResponseToByteArray(res response.Response) []byte {
 	result, _ := json.Marshal(res)
