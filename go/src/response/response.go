@@ -6,6 +6,8 @@ const (
 	FAIL_RES = iota
 	LOGIN_RES
 	REFRESH_RES
+	GET_USER_RES
+	GET_ITEM_RES
 	SIGN_UP_RES
 	CREATE_USER_RES
 	GET_ACCOUNT_ALL_DATA_RES
@@ -61,6 +63,24 @@ func CreateSuccessResponse(resType int) Response {
 	switch resType {
 	case LOGIN_RES:
 		var res LoginRes
+		res.init(successCode, successMsg)
+
+		return &res
+
+	case REFRESH_RES:
+		var res RefreshRes
+		res.init(successCode, successMsg)
+
+		return &res
+
+	case GET_USER_RES:
+		var res GetUserRes
+		res.init(successCode, successMsg)
+
+		return &res
+
+	case GET_ITEM_RES:
+		var res GetFolderRes
 		res.init(successCode, successMsg)
 
 		return &res
@@ -143,8 +163,6 @@ func (res *BasicRes) init(code int, msg string) {
 
 type LoginRes struct {
 	BaseResponse
-	Uid string `json:"uid"`
-	//Sid     string         `json:"sid"`
 	AccessToken  string         `json:"access_token"`
 	RefreshToken string         `json:"refresh_token"`
 	Account      models.Account `json:"account"`
@@ -161,6 +179,33 @@ type RefreshRes struct {
 }
 
 func (res *RefreshRes) init(code int, msg string) {
+	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+}
+
+type GetUserRes struct {
+	BaseResponse
+	User models.User `json:"user"`
+}
+
+func (res *GetUserRes) init(code int, msg string) {
+	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+}
+
+type GetFolderRes struct {
+	BaseResponse
+	Folder models.Folder `json:"folder"`
+}
+
+func (res *GetFolderRes) init(code int, msg string) {
+	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+}
+
+type GetPlanRes struct {
+	BaseResponse
+	Plan models.Folder `json:"plan"`
+}
+
+func (res *GetPlanRes) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }
 

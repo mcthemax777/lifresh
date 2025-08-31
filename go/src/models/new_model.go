@@ -141,33 +141,31 @@ type Account struct {
 	Email       *string            `gorm:"type:varchar(191);uniqueIndex" json:"email"`
 	PhotoURL    *string            `gorm:"type:varchar(255)" json:"photoUrl"`
 	Social      SocialType         `gorm:"not null" json:"socialType"`
-	ProviderUID *string            `gorm:"type:varchar(191);index" json:"providerUid"`
+	ProviderUID *string            `gorm:"type:varchar(191);uniqueIndex" json:"providerUid"`
+	CreatedAt   time.Time          `json:"createdAt"`
+	UpdatedAt   time.Time          `json:"updatedAt"`
 
-	UserID *define.SnowflakeID `gorm:"type:bigint;index" json:"userId"`
-	User   *User               `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"user"`
-
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	//User *User `gorm:"-" json:"user"`
 }
 
 // User is the domain profile. Root points to the root Folder.
 type User struct {
 	ID         define.SnowflakeID `gorm:"type:bigint;primaryKey" json:"id"`
+	AccountID  define.SnowflakeID `gorm:"type:bigint;index;not null" json:"accountId"`
 	Nickname   string             `gorm:"type:varchar(60);not null" json:"nickname"`
 	Bio        string             `gorm:"type:varchar(255)" json:"bio"`
 	ProfileURL *string            `gorm:"type:varchar(255)" json:"profileUrl"`
+	CreatedAt  time.Time          `json:"createdAt"`
+	UpdatedAt  time.Time          `json:"updatedAt"`
 
-	RootFolderID *define.SnowflakeID `gorm:"type:bigint;index" json:"rootFolderId"`
-	RootFolder   *Folder             `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"root"`
-
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	Root *Folder `gorm:"-" json:"root"`
 }
 
 // Folder represents a node that can contain child folders and plans.
 type Folder struct {
 	ID       define.SnowflakeID  `gorm:"type:bigint;primaryKey" json:"id"`
 	ParentID *define.SnowflakeID `gorm:"type:bigint;index" json:"parentId"`
+	UserID   define.SnowflakeID  `gorm:"type:bigint;index;not null" json:"userId"`
 	Order    int                 `gorm:"not null;default:0" json:"order"`
 	Color    int                 `gorm:"not null" json:"color"`
 	Name     string              `gorm:"type:varchar(120);not null" json:"name"`
@@ -183,6 +181,7 @@ type Folder struct {
 type Plan struct {
 	ID          define.SnowflakeID  `gorm:"type:bigint;primaryKey" json:"id"`
 	ParentID    *define.SnowflakeID `gorm:"type:bigint;index" json:"parentId"` // Folder.ID
+	UserID      define.SnowflakeID  `gorm:"type:bigint;index;not null" json:"userId"`
 	Order       int                 `gorm:"not null;default:0" json:"order"`
 	Color       int                 `gorm:"not null" json:"color"`
 	Name        string              `gorm:"type:varchar(120);not null" json:"name"`

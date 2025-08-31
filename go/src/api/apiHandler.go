@@ -23,6 +23,7 @@ func init() {
 	HandlerMap = make(map[string]BaseHandler)
 	HandlerMap[define.ApiLogin] = LoginHandler{}
 	HandlerMap[define.ApiRefresh] = RefreshHandler{}
+	//HandlerMap[define.ApiRoot] = GetFolderHandler{}
 	//handlerMap["signUp"] = SignUpHandler{}
 	//handlerMap["createUser"] = NewCreateUserHandler()
 	//handlerMap["getAccountAllData"] = NewGetAccountAllDataHandler()

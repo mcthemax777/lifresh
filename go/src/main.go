@@ -272,6 +272,7 @@ func main() {
 	{
 		// JWT 미들웨어
 		apiGroup.Use(auth.JWTAuthSkipper())
+		authGroup.GET(define.ApiGetItem, api.HandlerMap[define.ApiGetItem].ApiCall)
 		// Root / Items
 		//apiGroup.GET("/v1/root", getRoot)
 		//apiGroup.PUT("/v1/root", putRoot)

@@ -46,6 +46,7 @@ const (
 const (
 	ApiLogin   = "/login"
 	ApiRefresh = "/refresh"
+	ApiGetItem = "/item"
 )
 
 // =====================================================

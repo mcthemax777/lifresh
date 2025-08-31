@@ -32,7 +32,8 @@ func (h LoginHandler) process(reqBody []byte) ([]byte, error) {
 
 	// 1) Google idToken이 오면 OIDC로 검증
 	var uid string
-
+	var email string
+	var name string
 	//// 로그인 핸들러 내부 (요지)
 	switch {
 	case req.SocialType == define.SocialTypeGuest:
@@ -42,6 +43,9 @@ func (h LoginHandler) process(reqBody []byte) ([]byte, error) {
 		} else {
 			uid = req.SocialToken
 		}
+
+		email = ""
+		name = uid
 	case req.SocialType == define.SocialTypeGoogle:
 		ids := strings.Split(os.Getenv("GOOGLE_OAUTH_CLIENT_IDS"), ",")
 		ctx, cancel := auth.ContextWithTimeout(5)
@@ -51,8 +55,8 @@ func (h LoginHandler) process(reqBody []byte) ([]byte, error) {
 			return ResponseToByteArray(response.CreateFailResponse(201, "invalid_google_idtoken")), err
 		}
 		uid = "google-" + claims.Subject
-		//email := claims.Email
-		//name := claims.Name
+		email = claims.Email
+		name = claims.Name
 		//picture := claims.Picture
 
 	case req.SocialType == define.SocialTypeApple:
@@ -65,12 +69,19 @@ func (h LoginHandler) process(reqBody []byte) ([]byte, error) {
 			return ResponseToByteArray(response.CreateFailResponse(201, "invalid_apple_idtoken")), err
 		}
 		uid = "apple-" + ac.Subject
+		email = ac.Email
+		name = "apple_none"
 	}
 
 	account, err := db.DBHandlerSG.GetAccountByUID(uid)
 
 	if err != nil {
-		account, err = db.DBHandlerSG.InsertAccount(req.SocialType, uid)
+		//게스트 로그인인데 토큰 보냈으면 존재하는 유저라고 판단해야됨
+		if req.SocialType == define.SocialTypeGuest && req.SocialToken != "" {
+			return ResponseToByteArray(response.CreateFailResponse(202, "select error")), err
+		}
+
+		account, err = db.DBHandlerSG.InsertAccount(req.SocialType, uid, name, email)
 		if err != nil {
 			return ResponseToByteArray(response.CreateFailResponse(202, "insert error")), err
 		}
@@ -98,8 +109,6 @@ func (h LoginHandler) process(reqBody []byte) ([]byte, error) {
 	res := response.CreateSuccessResponse(response.LOGIN_RES)
 
 	loginRes := res.(*response.LoginRes)
-	//임시로 userId 넣어줌(나중에 유니크한 아이디 생성해서 전달)
-	loginRes.Uid = uid
 	loginRes.AccessToken = at
 	loginRes.RefreshToken = rt
 	//loginRes.Sid = sid

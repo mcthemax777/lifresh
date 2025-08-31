@@ -1,13 +1,15 @@
 package db
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/sony/sonyflake"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"lifresh/custom_time"
 	"lifresh/define"
 	"lifresh/models"
+	"time"
 )
 
 var sf *sonyflake.Sonyflake
@@ -41,7 +43,7 @@ func init() {
 	var localDbInfo = DBInfo{"root", "lifresh", "127.0.0.1:3306", "mysql", "lifresh"}
 
 	if define.OsType == define.OsTypeWindows {
-		localDbInfo = DBInfo{"root", "lifresh", "127.0.0.1:3306", "mysql", "lifresh_planner"}
+		localDbInfo = DBInfo{"root", "lifresh", "127.0.0.1:3306", "mysql", "lifresh"}
 	}
 
 	dsn := localDbInfo.user + ":" + localDbInfo.pwd + "@tcp(" + localDbInfo.url + ")/" + localDbInfo.database + "?charset=utf8&parseTime=true"
@@ -94,7 +96,10 @@ type DBHandlerImpl struct {
 }
 
 func (dh *DBHandlerImpl) Begin() *gorm.DB {
-	return dbConn.Begin()
+	return dbConn.Begin(&sql.TxOptions{
+		Isolation: sql.LevelRepeatableRead,
+		ReadOnly:  true,
+	})
 }
 
 func (dh *DBHandlerImpl) Commit(d *gorm.DB) {
@@ -105,8 +110,8 @@ func (dh *DBHandlerImpl) Rollback(d *gorm.DB) {
 	d.Rollback()
 }
 
-func (dh *DBHandlerImpl) InsertAccount(socialType int, uid string) (models.Account, error) {
-	account := models.Account{Social: socialType, SocialToken: socialToken, UpdateDate: custom_time.Now(), CreateDate: custom_time.Now()}
+func (dh *DBHandlerImpl) InsertAccount(socialType int, uid string, name string, email string) (models.Account, error) {
+	account := models.Account{Social: models.SocialType(socialType), ProviderUID: &uid} // SocialToken: socialToken, UpdateDate: custom_time.Now(), CreateDate: custom_time.Now()}
 	tx := dbConn.Begin()
 
 	if err := tx.Error; err != nil {
@@ -121,51 +126,172 @@ func (dh *DBHandlerImpl) InsertAccount(socialType int, uid string) (models.Accou
 		return account, result.Error
 	}
 
-	//planner 생성
-	result = tx.Create(&models.Planner{AccountId: account.AccountId, UpdateDate: custom_time.Now()})
+	user := models.User{ID: account.ID, AccountID: account.ID, Nickname: uid, Bio: "", UpdatedAt: time.Now()}
+	//user 생성
+	result = tx.Create(&user)
 
 	if result.Error != nil {
 		tx.Rollback()
 		return account, result.Error
 	}
 
-	//money 생성
-	result = tx.Create(&models.Money{AccountId: account.AccountId, UpdateDate: custom_time.Now()})
+	//root 생성
+	root := models.Folder{ID: account.ID, UserID: user.ID, Name: "root", UpdatedAt: time.Now()}
+	result = tx.Create(&root)
 
 	if result.Error != nil {
 		tx.Rollback()
 		return account, result.Error
 	}
 
-	//diary 생성
-	result = tx.Create(&models.Diary{AccountId: account.AccountId, UpdateDate: custom_time.Now()})
-
-	if result.Error != nil {
-		tx.Rollback()
-		return account, result.Error
-	}
+	//account.User = &user
+	//user.Root = &root
 
 	return account, tx.Commit().Error
 }
 
 func (dh *DBHandlerImpl) GetAccountByUID(uid string) (models.Account, error) {
-	//return models.Account{}, nil
 
 	var account models.Account
-
-	tx := dbConn.Where("providerUid = ?", uid)
-
-	if tx.Error != nil {
-		return account, tx.Error
-	}
-
-	account.ProviderUID = &uid
-
-	if err := tx.Take(&account).Error; err != nil {
+	if err := dbConn.Where("provider_uid = ?", uid).First(&account).Error; err != nil {
 		return account, err
 	}
 
 	return account, nil
+
+	//var account models.Account
+	//var user models.User
+	//var root models.Folder
+	//
+	//// 같은 스냅샷에서 account -> user -> root를 읽기 위한 읽기 전용 트랜잭션
+	//tx := dbConn.Begin(&sql.TxOptions{
+	//	Isolation: sql.LevelRepeatableRead,
+	//	ReadOnly:  true,
+	//})
+	//if tx.Error != nil {
+	//	return account, tx.Error
+	//}
+	//// 롤백 안전장치
+	//defer func() { _ = tx.Rollback() }()
+	//
+	//// 1) account
+	//if err := tx.Where("provider_uid = ?", uid).Take(&account).Error; err != nil {
+	//	if errors.Is(err, gorm.ErrRecordNotFound) {
+	//		return account, err
+	//	}
+	//	return account, err
+	//}
+	//
+	//// 2) user
+	//if err := tx.First(&user, "account_id = ?", account.ID).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	//	return account, err
+	//}
+	//
+	//// 3) root
+	//_ = tx.Where("user_id = ? AND parent_id IS NULL", user.ID).Take(&root).Error
+	//
+	//if err := tx.Commit().Error; err != nil {
+	//	return account, err
+	//}
+	//
+	//account.User = &user
+	//user.Root = &root
+	//
+	//return account, nil
+}
+
+func (dh *DBHandlerImpl) GetUserByUID(userID define.SnowflakeID) (*models.User, []models.Folder, []models.Plan, error) {
+
+	var user models.User
+
+	// 같은 스냅샷에서 account -> user -> root를 읽기 위한 읽기 전용 트랜잭션
+	tx := dbConn.Begin(&sql.TxOptions{
+		Isolation: sql.LevelRepeatableRead,
+		ReadOnly:  true,
+	})
+	if tx.Error != nil {
+		return nil, nil, nil, tx.Error
+	}
+	// 롤백 안전장치
+	defer tx.Rollback()
+
+	// get user
+	if err := tx.First(&user, "id = ?", userID).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil, nil, err
+	}
+
+	var folderList []models.Folder
+	var planList []models.Plan
+
+	// get folder
+	if err := tx.Where("user_id = ?", userID).Find(&folderList).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil, nil, err
+	}
+
+	_ = tx.Where("user_id = ?", userID).Find(&planList).Error
+
+	if err := tx.Commit().Error; err != nil {
+		return nil, nil, nil, err
+	}
+
+	return &user, folderList, planList, nil
+}
+
+func (dh *DBHandlerImpl) GetFolderByID(folderID define.SnowflakeID) (models.Folder, error) {
+
+	var item models.Folder
+
+	// 같은 스냅샷에서 account -> user -> root를 읽기 위한 읽기 전용 트랜잭션
+	tx := dbConn.Begin(&sql.TxOptions{
+		Isolation: sql.LevelRepeatableRead,
+		ReadOnly:  true,
+	})
+	if tx.Error != nil {
+		return item, tx.Error
+	}
+	// 롤백 안전장치
+	defer func() { _ = tx.Rollback() }()
+
+	// 3) list
+	_ = tx.Where("id = ?", folderID).Find(&item).Error
+
+	if err := tx.Commit().Error; err != nil {
+		return item, err
+	}
+
+	userID := item.UserID
+
+	var folderList []models.Folder
+	var planList []models.Plan
+
+	// 3) list
+	_ = tx.Where("user_id = ?", userID).Find(&folderList).Error
+
+	if err := tx.Commit().Error; err != nil {
+		return item, err
+	}
+
+	folderMap := make(map[define.SnowflakeID]*models.Folder)
+	for _, folder := range folderList {
+		folderMap[folder.ID] = &folder
+	}
+
+	for _, folder := range folderList {
+		if folder.ParentID == nil {
+
+		} else {
+			parent := folderMap[*folder.ParentID]
+			parent.ChildrenFolders = append(parent.ChildrenFolders, folder)
+		}
+	}
+
+	_ = tx.Where("parent_id IN ?", userID).Find(&planList).Error
+
+	if err := tx.Commit().Error; err != nil {
+		return item, err
+	}
+
+	return item, nil
 }
 
 //func (dh *DBHandlerImpl) GetAccountByUserId(userId string, password string) (models.Account, error) {

@@ -21,6 +21,14 @@ type RefreshReq struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+type GetUserReq struct {
+	UserID string `json:"user_id"`
+}
+
+type GetItemReq struct {
+	ItemID string `json:"item_id"`
+}
+
 type SignUpReq struct {
 	Nickname       string `json:"nickname"`
 	RootFolderName string `json:"root_folder_name"`
