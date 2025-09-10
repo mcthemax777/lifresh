@@ -3,23 +3,19 @@ package api
 import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"lifresh/auth"
 	"lifresh/db"
 	"lifresh/define"
+	"lifresh/internal/transport/http/dto/request"
+	"lifresh/internal/transport/http/dto/response"
+	"lifresh/internal/transport/http/handler"
 	"lifresh/models"
-	"lifresh/request"
-	"lifresh/response"
-	"os"
-	"strings"
-	"time"
 )
 
 type GetUserHandler struct {
 }
 
 func (h GetUserHandler) ApiCall(c *gin.Context) {
-	ApiCall(c, h.process)
+	handler.ApiCall(c, h.process)
 }
 
 func (h GetUserHandler) process(reqBody []byte) ([]byte, error) {
@@ -28,7 +24,7 @@ func (h GetUserHandler) process(reqBody []byte) ([]byte, error) {
 	err := json.Unmarshal(reqBody, &req)
 
 	if err != nil {
-		return ResponseToByteArray(response.CreateFailResponse(201, "invalid_json")), err
+		return handler.ResponseToByteArray(response.CreateFailResponse(201, "invalid_json")), err
 	}
 
 	var userID define.SnowflakeID
@@ -58,7 +54,7 @@ func (h GetUserHandler) process(reqBody []byte) ([]byte, error) {
 	for _, plan := range planList {
 		if plan.ParentID == nil {
 			// 부모 폴더가 없는게 말이 안됨. error
-			return ResponseToByteArray(response.CreateFailResponse(202, "no parent")), err
+			return handler.ResponseToByteArray(response.CreateFailResponse(202, "no parent")), err
 		} else {
 			parent := folderMap[*plan.ParentID]
 			parent.ChildrenFolders = append(parent.ChildrenFolders, plan)
@@ -73,5 +69,5 @@ func (h GetUserHandler) process(reqBody []byte) ([]byte, error) {
 	getUserRes := res.(*response.GetFolderRes)
 	getUserRes.Folder = account
 
-	return ResponseToByteArray(loginRes), nil
+	return handler.ResponseToByteArray(loginRes), nil
 }

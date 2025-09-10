@@ -1,11 +1,16 @@
 package response
 
-import "lifresh/models"
+import (
+	"lifresh/define"
+	"lifresh/internal/domain"
+	"lifresh/models"
+)
 
 const (
 	FAIL_RES = iota
 	LOGIN_RES
 	REFRESH_RES
+	PING_RES
 	GET_USER_RES
 	GET_ITEM_RES
 	SIGN_UP_RES
@@ -69,6 +74,12 @@ func CreateSuccessResponse(resType int) Response {
 
 	case REFRESH_RES:
 		var res RefreshRes
+		res.init(successCode, successMsg)
+
+		return &res
+
+	case PING_RES:
+		var res PingRes
 		res.init(successCode, successMsg)
 
 		return &res
@@ -163,9 +174,9 @@ func (res *BasicRes) init(code int, msg string) {
 
 type LoginRes struct {
 	BaseResponse
-	AccessToken  string         `json:"access_token"`
-	RefreshToken string         `json:"refresh_token"`
-	Account      models.Account `json:"account"`
+	AccessToken  string          `json:"access_token"`
+	RefreshToken string          `json:"refresh_token"`
+	Account      *domain.Account `json:"account"`
 }
 
 func (res *LoginRes) init(code int, msg string) {
@@ -179,6 +190,15 @@ type RefreshRes struct {
 }
 
 func (res *RefreshRes) init(code int, msg string) {
+	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+}
+
+type PingRes struct {
+	AccountID define.SnowflakeID `json:"account_id"`
+	BaseResponse
+}
+
+func (res *PingRes) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }
 

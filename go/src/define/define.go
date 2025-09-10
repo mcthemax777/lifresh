@@ -33,10 +33,12 @@ func init() {
 	fmt.Printf("os type - %d\n", OsType)
 }
 
+type SocialType int8
+
 const (
-	SocialTypeGuest  = 0
-	SocialTypeGoogle = 1
-	SocialTypeApple  = 2
+	SocialTypeGuest SocialType = iota
+	SocialTypeGoogle
+	SocialTypeApple
 )
 
 const (
@@ -46,6 +48,8 @@ const (
 const (
 	ApiLogin   = "/login"
 	ApiRefresh = "/refresh"
+
+	ApiPing    = "/ping"
 	ApiGetItem = "/item"
 )
 

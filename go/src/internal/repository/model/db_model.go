@@ -1,13 +1,15 @@
-package models
+package model
 
 import (
 	"database/sql/driver"
-	"encoding/json"
-	"errors"
+	"gorm.io/gorm"
 	"lifresh/define"
 	"time"
+)
 
-	"gorm.io/gorm"
+import (
+	"encoding/json"
+	"errors"
 )
 
 // Optional: plug your own generator at runtime (service layer)
@@ -136,16 +138,14 @@ const (
 // Account: authentication account; separate from domain User profile.
 // NOTE: ProviderUID keeps the external provider's user id (string).
 type Account struct {
-	ID          define.SnowflakeID `gorm:"type:bigint;primaryKey" json:"id"`
-	Name        *string            `gorm:"type:varchar(100)" json:"name"`
-	Email       *string            `gorm:"type:varchar(191);uniqueIndex" json:"email"`
-	PhotoURL    *string            `gorm:"type:varchar(255)" json:"photoUrl"`
-	SocialType  SocialType         `gorm:"not null" json:"socialType"`
-	ProviderUID *string            `gorm:"type:varchar(191);uniqueIndex" json:"providerUid"`
-	CreatedAt   time.Time          `json:"createdAt"`
-	UpdatedAt   time.Time          `json:"updatedAt"`
-
-	//User *User `gorm:"-" json:"user"`
+	ID          define.SnowflakeID `gorm:"type:bigint;primaryKey"`
+	Name        string             `gorm:"type:varchar(100)"`
+	Email       string             `gorm:"type:varchar(191);uniqueIndex"`
+	PhotoURL    string             `gorm:"type:varchar(255)"`
+	SocialType  int8               `gorm:"not null" `
+	ProviderUID string             `gorm:"type:varchar(191);uniqueIndex"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 // User is the domain profile. Root points to the root Folder.
@@ -154,7 +154,7 @@ type User struct {
 	AccountID  define.SnowflakeID `gorm:"type:bigint;index;not null" json:"accountId"`
 	Nickname   string             `gorm:"type:varchar(60);not null" json:"nickname"`
 	Bio        string             `gorm:"type:varchar(255)" json:"bio"`
-	ProfileURL *string            `gorm:"type:varchar(255)" json:"profileUrl"`
+	ProfileURL string             `gorm:"type:varchar(255)" json:"profileUrl"`
 	CreatedAt  time.Time          `json:"createdAt"`
 	UpdatedAt  time.Time          `json:"updatedAt"`
 

@@ -7,8 +7,11 @@ import (
 	"github.com/sony/sonyflake"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 	"lifresh/define"
 	"lifresh/models"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -20,9 +23,9 @@ func initIDGen() {
 	})
 }
 
-func nextID() (define.SnowflakeID, error) {
+func NextID() define.SnowflakeID {
 	id, _ := sf.NextID()
-	return define.SnowflakeID(id), nil
+	return define.SnowflakeID(id)
 }
 
 var DBHandlerSG DBHandlerImpl
@@ -37,7 +40,53 @@ type DBInfo struct {
 	database string
 }
 
-func init() {
+// 커스텀 Namer: 기본 NamingStrategy를 임베드하고 ColumnName만 오버라이드
+type CustomNamingOption struct {
+	schema.NamingStrategy
+	acronyms []string
+	reAcr    *regexp.Regexp // ([a-z0-9])(URL|ID|API|...) 경계
+	reCamel  *regexp.Regexp // camelCase -> snake_case 경계
+}
+
+func NewNamingOption(prefix string, singular bool, acronyms []string) CustomNamingOption {
+	// 소문자/숫자 뒤에 약어가 오면 언더스코어를 넣기 위한 정규식
+	// 예: photoURL -> photo_URL (이후 snake 처리)
+	pat := fmt.Sprintf(`([a-z0-9])(%s)\b`, strings.Join(acronyms, "|"))
+	return CustomNamingOption{
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   prefix,
+			SingularTable: singular,
+		},
+		acronyms: acronyms,
+		reAcr:    regexp.MustCompile(pat),
+		reCamel:  regexp.MustCompile(`([a-z0-9])([A-Z])`),
+	}
+}
+
+// ColumnName: 약어 경계에 언더스코어 삽입 → 카멜 경계 underscoring → 전부 소문자
+func (n CustomNamingOption) ColumnName(_ string, column string) string {
+	// 1) 약어를 모두 대문자로 정규화 (Url→URL, Id→ID 등)
+	for _, ac := range n.acronyms {
+		title := strings.Title(strings.ToLower(ac)) // Url, Id, Api ...
+		column = strings.ReplaceAll(column, title, ac)
+		column = strings.ReplaceAll(column, strings.ToLower(ac), ac)
+	}
+	// 2) 컬럼 전체가 약어 하나인 경우: 바로 소문자 반환 (URL -> url)
+	up := strings.ToUpper(column)
+	for _, ac := range n.acronyms {
+		if up == ac {
+			return strings.ToLower(ac)
+		}
+	}
+	// 3) 약어 앞에 언더스코어 삽입 (예: photoURL -> photo_URL)
+	column = n.reAcr.ReplaceAllString(column, "${1}_$2")
+	// 4) 일반 카멜 경계도 언더스코어 삽입 (예: apiKey -> api_Key)
+	column = n.reCamel.ReplaceAllString(column, "${1}_${2}")
+	// 5) 전부 소문자
+	return strings.ToLower(column)
+}
+
+func InitDB() *gorm.DB {
 	initIDGen()
 
 	var localDbInfo = DBInfo{"root", "lifresh", "127.0.0.1:3306", "mysql", "lifresh"}
@@ -48,17 +97,33 @@ func init() {
 
 	dsn := localDbInfo.user + ":" + localDbInfo.pwd + "@tcp(" + localDbInfo.url + ")/" + localDbInfo.database + "?charset=utf8&parseTime=true"
 
-	result, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	namingOption := NewNamingOption(
+		"",   // TablePrefix (예: "cm2_")
+		true, // SingularTable
+		[]string{"URL", "ID", "API", "HTML", "JSON", "IP"}, // 필요한 약어 추가
+	)
+	result, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		// AutoMigrate 시 외래키 제약 생성 비활성화
+		DisableForeignKeyConstraintWhenMigrating: true,
+
+		NamingStrategy: namingOption,
+	})
 
 	if err != nil {
-		return
+		panic("failed to connect database")
 	}
 
 	fmt.Println("db init all")
 
 	dbConn = result
 
-	models.AutoMigrate(dbConn)
+	err = models.AutoMigrate(dbConn)
+
+	if err != nil {
+		panic("failed to migrate database")
+	}
+
+	return dbConn
 }
 
 // type DB interface {
@@ -111,7 +176,7 @@ func (dh *DBHandlerImpl) Rollback(d *gorm.DB) {
 }
 
 func (dh *DBHandlerImpl) InsertAccount(socialType int, uid string, name string, email string) (models.Account, error) {
-	account := models.Account{Social: models.SocialType(socialType), ProviderUID: &uid} // SocialToken: socialToken, UpdateDate: custom_time.Now(), CreateDate: custom_time.Now()}
+	account := models.Account{SocialType: models.SocialType(socialType), ProviderUID: &uid} // SocialToken: socialToken, UpdateDate: custom_time.Now(), CreateDate: custom_time.Now()}
 	tx := dbConn.Begin()
 
 	if err := tx.Error; err != nil {

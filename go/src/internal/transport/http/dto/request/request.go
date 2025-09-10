@@ -21,6 +21,9 @@ type RefreshReq struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+type PingReq struct {
+}
+
 type GetUserReq struct {
 	UserID string `json:"user_id"`
 }

@@ -2,8 +2,9 @@ package api
 
 import (
 	"encoding/json"
-	"lifresh/request"
-	"lifresh/response"
+	"lifresh/internal/transport/http/dto/request"
+	"lifresh/internal/transport/http/dto/response"
+	"lifresh/internal/transport/http/handler"
 )
 
 type SignUpHandler struct {
@@ -14,13 +15,13 @@ func (h SignUpHandler) process(reqBody []byte) ([]byte, error) {
 	err := json.Unmarshal(reqBody, &req)
 
 	if err != nil {
-		return ResponseToByteArray(response.CreateFailResponse(201, "invalid_json")), err
+		return handler.ResponseToByteArray(response.CreateFailResponse(201, "invalid_json")), err
 	}
 
 	//err, _ = db.DBHandlerSG.InsertUserAndRootFolder(req.Nickname, req.RootFolderName)
 
 	if err != nil {
-		return ResponseToByteArray(response.CreateFailResponse(201, "invalid_json")), err
+		return handler.ResponseToByteArray(response.CreateFailResponse(201, "invalid_json")), err
 	}
 
 	//전송할 데이터 만들기
@@ -28,5 +29,5 @@ func (h SignUpHandler) process(reqBody []byte) ([]byte, error) {
 
 	signUpRes := res.(*response.SignUpRes)
 
-	return ResponseToByteArray(signUpRes), nil
+	return handler.ResponseToByteArray(signUpRes), nil
 }

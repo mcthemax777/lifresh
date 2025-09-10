@@ -1,21 +1,22 @@
 package api
 
 import (
-	"lifresh/response"
+	"lifresh/internal/transport/http/dto/response"
+	"lifresh/internal/transport/http/handler"
 )
 
 type GetAccountAllDataHandler struct {
-	SessionApiHandler
+	handler.SessionApiHandler
 }
 
 func NewGetAccountAllDataHandler() GetAccountAllDataHandler {
-	h := GetAccountAllDataHandler{SessionApiHandler: NewSessionApiHandler()}
+	h := GetAccountAllDataHandler{SessionApiHandler: handler.NewSessionApiHandler()}
 	return h
 }
 
 func (h GetAccountAllDataHandler) process(reqBody []byte) ([]byte, error) {
 
-	return ResponseToByteArray(response.CreateFailResponse(201, "invalid_json")), nil
+	return handler.ResponseToByteArray(response.CreateFailResponse(201, "invalid_json")), nil
 	//var req request.GetAccountAllDataReq
 	//err := json.Unmarshal(reqBody, &req)
 	//

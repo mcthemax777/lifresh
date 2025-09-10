@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"lifresh/define"
+	"lifresh/internal/core/apperr"
 	"net/http"
 	"os"
 	"strings"
@@ -23,7 +24,7 @@ type RefreshClaims struct {
 	jwt.RegisteredClaims
 }
 
-func SignAccess(accountID define.SnowflakeID, uid string, ttl time.Duration) (string, error) {
+func SignAccess(accountID define.SnowflakeID, uid string, ttl time.Duration) (string, *apperr.AppError) {
 	secret := os.Getenv("JWT_ACCESS_SECRET")
 	if secret == "" {
 		secret = "dev-access-secret"
@@ -39,10 +40,15 @@ func SignAccess(accountID define.SnowflakeID, uid string, ttl time.Duration) (st
 		},
 	}
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, cl)
-	return t.SignedString([]byte(secret))
+	at, err := t.SignedString([]byte(secret))
+	if err != nil {
+		return "", apperr.New(201, "access_token invalid", err)
+	}
+
+	return at, nil
 }
 
-func SignRefresh(accountID define.SnowflakeID, uid string, ttl time.Duration) (string, string, error) {
+func SignRefresh(accountID define.SnowflakeID, uid string, ttl time.Duration) (string, string, *apperr.AppError) {
 	secret := os.Getenv("JWT_REFRESH_SECRET")
 	if secret == "" {
 		secret = "dev-refresh-secret"
@@ -62,7 +68,11 @@ func SignRefresh(accountID define.SnowflakeID, uid string, ttl time.Duration) (s
 	}
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, cl)
 	signed, err := t.SignedString([]byte(secret))
-	return signed, jti, err
+	if err != nil {
+		return "", "", apperr.New(201, "refresh_token invalid", err)
+	}
+
+	return signed, jti, nil
 }
 
 func parseAccess(tokenStr string) (*AccessClaims, error) {
@@ -79,7 +89,7 @@ func parseAccess(tokenStr string) (*AccessClaims, error) {
 	return tok.Claims.(*AccessClaims), nil
 }
 
-func ParseRefresh(tokenStr string) (*RefreshClaims, error) {
+func ParseRefresh(tokenStr string) (*RefreshClaims, *apperr.AppError) {
 	secret := os.Getenv("JWT_REFRESH_SECRET")
 	if secret == "" {
 		secret = "dev-refresh-secret"
@@ -88,7 +98,7 @@ func ParseRefresh(tokenStr string) (*RefreshClaims, error) {
 		return []byte(secret), nil
 	})
 	if err != nil || !tok.Valid {
-		return nil, errors.New("invalid refresh token")
+		return nil, apperr.New(201, "invalid_refresh", err)
 	}
 	return tok.Claims.(*RefreshClaims), nil
 }
@@ -97,6 +107,8 @@ func ParseRefresh(tokenStr string) (*RefreshClaims, error) {
 func JWTAuthSkipper() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		path := c.FullPath()
+
+		//이미 main 에서 걸러지긴 함
 		if strings.HasPrefix(path, "/v1/auth/") {
 			c.Next()
 			return
