@@ -1,4 +1,4 @@
-FROM golang:1.18
+FROM golang:1.23
 RUN go env -w GO111MODULE=auto
 ENV GOPATH /app/go
 ENV GOROOT /usr/local/go
@@ -21,5 +21,5 @@ RUN go mod tidy
 #RUN go install -v github.com/go-sql-driver/mysql
 
 EXPOSE 8000
-RUN go build ./main.go
-CMD ["go", "run", "./main.go"]
+RUN go build ./cmd/api/main.go
+CMD ["go", "run", "./cmd/api/main.go"]
