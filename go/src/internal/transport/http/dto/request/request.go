@@ -1,9 +1,5 @@
 package request
 
-import (
-	"lifresh/models"
-)
-
 type Request interface {
 }
 
@@ -49,32 +45,33 @@ type GetAccountAllDataReq struct {
 	Sid string `json:"sid"`
 }
 
-type AddPlanListReq struct {
-	Uid                    string                      `json:"uid"`
-	Sid                    string                      `json:"sid"`
-	PlanList               []models.Plan               `json:"plan_list"`
-	PlanRecordList         []models.PlanRecord         `json:"plan_record_list"`
-	PlanRecordOperatorList []models.PlanRecordOperator `json:"plan_record_operator_list"`
-	PlanGoalList           []models.PlanGoal           `json:"plan_goal_list"`
-}
-
-type AddPlanRecordListReq struct {
-	Uid            string              `json:"uid"`
-	Sid            string              `json:"sid"`
-	PlanRecordList []models.PlanRecord `json:"plan_record_list"`
-}
-
-type AddPlanRecordOperatorListReq struct {
-	Uid                    string                      `json:"uid"`
-	Sid                    string                      `json:"sid"`
-	PlanRecordOperatorList []models.PlanRecordOperator `json:"plan_record_operator_list"`
-}
-
-type AddPlanGoalListReq struct {
-	Uid          string            `json:"uid"`
-	Sid          string            `json:"sid"`
-	PlanGoalList []models.PlanGoal `json:"plan_goal_list"`
-}
+//
+//type AddPlanListReq struct {
+//	Uid                    string                     `json:"uid"`
+//	Sid                    string                     `json:"sid"`
+//	PlanList               []model.Plan               `json:"plan_list"`
+//	PlanRecordList         []model.PlanRecord         `json:"plan_record_list"`
+//	PlanRecordOperatorList []model.PlanRecordOperator `json:"plan_record_operator_list"`
+//	PlanGoalList           []model.PlanGoal           `json:"plan_goal_list"`
+//}
+//
+//type AddPlanRecordListReq struct {
+//	Uid            string             `json:"uid"`
+//	Sid            string             `json:"sid"`
+//	PlanRecordList []model.PlanRecord `json:"plan_record_list"`
+//}
+//
+//type AddPlanRecordOperatorListReq struct {
+//	Uid                    string                     `json:"uid"`
+//	Sid                    string                     `json:"sid"`
+//	PlanRecordOperatorList []model.PlanRecordOperator `json:"plan_record_operator_list"`
+//}
+//
+//type AddPlanGoalListReq struct {
+//	Uid          string           `json:"uid"`
+//	Sid          string           `json:"sid"`
+//	PlanGoalList []model.PlanGoal `json:"plan_goal_list"`
+//}
 
 //type AddDiaryCategoryListReq struct {
 //	Uid               string                 `json:"uid"`

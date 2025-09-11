@@ -28,12 +28,12 @@ func (s *AuthService) Auth(socialToken string, socialType define.SocialType) (*d
 	//// 로그인 핸들러 내부 (요지)
 	switch {
 	case socialType == define.SocialTypeGuest:
-		uid = socialToken
-		email = ""
+		uid = "guest-" + socialToken
+		email = uid
 		name = uid
 	case socialType == define.SocialTypeGoogle:
 		ids := strings.Split(os.Getenv("GOOGLE_OAUTH_CLIENT_IDS"), ",")
-		ctx, cancel := auth.ContextWithTimeout(5)
+		ctx, cancel := auth.ContextWithTimeout(50)
 		defer cancel()
 		claims, err := auth.VerifyGoogleIDTokenAllowList(ctx, socialToken, ids)
 		if err != nil {
@@ -61,6 +61,7 @@ func (s *AuthService) Auth(socialToken string, socialType define.SocialType) (*d
 	}
 
 	account.ProviderUID = uid
+	account.Social = socialType
 	account.Email = email
 	account.Name = name
 

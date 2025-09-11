@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"lifresh/auth"
 	"lifresh/define"
 	"lifresh/internal/core/apperr"
@@ -22,6 +23,12 @@ func NewLoginHandler(authService *service.AuthService, userService *service.User
 
 func (h LoginHandler) ApiCall(c *gin.Context) {
 	_ = ApiHandlerFx[request.LoginReq, response.LoginRes](c, &request.LoginReq{}, func(req *request.LoginReq) (*response.LoginRes, *apperr.AppError) {
+
+		isNewGuest := false
+		if define.SocialType(req.SocialType) == define.SocialTypeGuest && req.SocialToken == "" {
+			req.SocialToken = uuid.New().String()
+			isNewGuest = true
+		}
 
 		account, err := h.authService.Auth(req.SocialToken, define.SocialType(req.SocialType))
 		if err != nil {
@@ -47,6 +54,11 @@ func (h LoginHandler) ApiCall(c *gin.Context) {
 		loginRes := res.(*response.LoginRes)
 		loginRes.AccessToken = at
 		loginRes.RefreshToken = rt
+
+		//게스트 첫 로그인에서만 idToken 전달
+		if isNewGuest {
+			loginRes.IdToken = req.SocialToken
+		}
 		loginRes.Account = account
 
 		return loginRes, nil

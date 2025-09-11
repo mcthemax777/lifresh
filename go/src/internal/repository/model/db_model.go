@@ -150,118 +150,118 @@ type Account struct {
 
 // User is the domain profile. Root points to the root Folder.
 type User struct {
-	ID         define.SnowflakeID `gorm:"type:bigint;primaryKey" json:"id"`
-	AccountID  define.SnowflakeID `gorm:"type:bigint;index;not null" json:"accountId"`
-	Nickname   string             `gorm:"type:varchar(60);not null" json:"nickname"`
-	Bio        string             `gorm:"type:varchar(255)" json:"bio"`
-	ProfileURL string             `gorm:"type:varchar(255)" json:"profileUrl"`
-	CreatedAt  time.Time          `json:"createdAt"`
-	UpdatedAt  time.Time          `json:"updatedAt"`
+	ID         define.SnowflakeID `gorm:"type:bigint;primaryKey"`
+	AccountID  define.SnowflakeID `gorm:"type:bigint;index;not null"`
+	Nickname   string             `gorm:"type:varchar(60);not null"`
+	Bio        string             `gorm:"type:varchar(255)"`
+	ProfileURL string             `gorm:"type:varchar(255)"`
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 
 	Root *Folder `gorm:"-" json:"root"`
 }
 
 // Folder represents a node that can contain child folders and plans.
 type Folder struct {
-	ID       define.SnowflakeID  `gorm:"type:bigint;primaryKey" json:"id"`
-	ParentID *define.SnowflakeID `gorm:"type:bigint;index" json:"parentId"`
-	UserID   define.SnowflakeID  `gorm:"type:bigint;index;not null" json:"userId"`
-	Order    int                 `gorm:"not null;default:0" json:"order"`
-	Color    int                 `gorm:"not null" json:"color"`
-	Name     string              `gorm:"type:varchar(120);not null" json:"name"`
+	ID       define.SnowflakeID  `gorm:"type:bigint;primaryKey"`
+	ParentID *define.SnowflakeID `gorm:"type:bigint;index"`
+	UserID   define.SnowflakeID  `gorm:"type:bigint;index;not null"`
+	Order    int                 `gorm:"not null;default:0"`
+	Color    int                 `gorm:"not null"`
+	Name     string              `gorm:"type:varchar(120);not null"`
 
-	ChildrenFolders []Folder `gorm:"foreignKey:ParentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"childrenFolders"`
-	Plans           []Plan   `gorm:"foreignKey:ParentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"plans"`
+	ChildrenFolders []Folder `gorm:"foreignKey:ParentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Plans           []Plan   `gorm:"foreignKey:ParentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // Plan captures configuration and child entities.
 type Plan struct {
-	ID          define.SnowflakeID  `gorm:"type:bigint;primaryKey" json:"id"`
-	ParentID    *define.SnowflakeID `gorm:"type:bigint;index" json:"parentId"` // Folder.ID
-	UserID      define.SnowflakeID  `gorm:"type:bigint;index;not null" json:"userId"`
-	Order       int                 `gorm:"not null;default:0" json:"order"`
-	Color       int                 `gorm:"not null" json:"color"`
-	Name        string              `gorm:"type:varchar(120);not null" json:"name"`
-	Description string              `gorm:"type:varchar(255)" json:"description"`
-	StartDate   *time.Time          `json:"startDate"`
-	FinishDate  *time.Time          `json:"finishDate"`
-	DateType    DateType            `gorm:"not null" json:"dateType"`
+	ID          define.SnowflakeID  `gorm:"type:bigint;primaryKey"`
+	ParentID    *define.SnowflakeID `gorm:"type:bigint;index"`
+	UserID      define.SnowflakeID  `gorm:"type:bigint;index;not null"`
+	Order       int                 `gorm:"not null;default:0"`
+	Color       int                 `gorm:"not null"`
+	Name        string              `gorm:"type:varchar(120);not null"`
+	Description string              `gorm:"type:varchar(255)"`
+	StartDate   time.Time
+	FinishDate  time.Time
+	DateType    DateType `gorm:"not null"`
 
-	MainRecordFieldID *define.SnowflakeID `gorm:"type:bigint;index" json:"mainRecordFieldId"`
+	MainRecordFieldID *define.SnowflakeID `gorm:"type:bigint;index"`
 
-	Goals        []Goal        `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"goals"`
-	RecordFields []RecordField `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"recordFields"`
-	RepeatRules  []RepeatRule  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"repeatRules"`
-	Records      []Record      `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"records"`
-	Statistics   []Statistics  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"statistics"`
+	Goals        []Goal        `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	RecordFields []RecordField `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	RepeatRules  []RepeatRule  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Records      []Record      `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Statistics   []Statistics  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // Goal mirrors GoalEntity.
 type Goal struct {
-	ID         define.SnowflakeID  `gorm:"type:bigint;primaryKey" json:"id"`
-	PlanID     define.SnowflakeID  `gorm:"type:bigint;index;not null" json:"planId"`
-	CycleType  GoalRepeatCycleType `gorm:"not null" json:"cycleType"`
-	Interval   int                 `gorm:"not null" json:"interval"`
-	RecordID   *define.SnowflakeID `gorm:"type:bigint" json:"recordId"`
-	Count      int                 `gorm:"not null" json:"count"`
-	StartDate  *time.Time          `json:"startDate"`
-	FinishDate *time.Time          `json:"finishDate"`
+	ID         define.SnowflakeID  `gorm:"type:bigint;primaryKey"`
+	PlanID     define.SnowflakeID  `gorm:"type:bigint;index;not null"`
+	CycleType  GoalRepeatCycleType `gorm:"not null"`
+	Interval   int                 `gorm:"not null"`
+	RecordID   *define.SnowflakeID `gorm:"type:bigint"`
+	Count      int                 `gorm:"not null"`
+	StartDate  time.Time
+	FinishDate time.Time
 
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // RecordField corresponds to RecordFieldEntity; both regular and repeat fields live here.
 type RecordField struct {
-	ID            define.SnowflakeID `gorm:"type:bigint;primaryKey" json:"id"`
-	PlanID        define.SnowflakeID `gorm:"type:bigint;index;not null" json:"planId"`
-	Name          string             `gorm:"type:varchar(120);not null" json:"name"`
-	Type          string             `gorm:"type:varchar(60);not null" json:"type"`
-	IsRepeatField bool               `gorm:"not null;default:false" json:"isRepeatField"`
-	Unit          *string            `gorm:"type:varchar(30)" json:"unit"`
+	ID            define.SnowflakeID `gorm:"type:bigint;primaryKey"`
+	PlanID        define.SnowflakeID `gorm:"type:bigint;index;not null"`
+	Name          string             `gorm:"type:varchar(120);not null"`
+	Type          string             `gorm:"type:varchar(60);not null"`
+	IsRepeatField bool               `gorm:"not null;default:false"`
+	Unit          string             `gorm:"type:varchar(30)"`
 
-	Options []OptionItem `gorm:"foreignKey:RecordFieldID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"options"`
+	Options []OptionItem `gorm:"foreignKey:RecordFieldID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // OptionItem is a tree under a RecordField.
 type OptionItem struct {
-	ID            define.SnowflakeID  `gorm:"type:bigint;primaryKey" json:"id"`
-	RecordFieldID define.SnowflakeID  `gorm:"type:bigint;index;not null" json:"recordFieldId"`
-	ParentID      *define.SnowflakeID `gorm:"type:bigint;index" json:"parentId"`
-	Name          string              `gorm:"type:varchar(120);not null" json:"name"`
+	ID            define.SnowflakeID `gorm:"type:bigint;primaryKey"`
+	RecordFieldID define.SnowflakeID `gorm:"type:bigint;index;not null"`
+	ParentID      define.SnowflakeID `gorm:"type:bigint;index"`
+	Name          string             `gorm:"type:varchar(120);not null"`
 
-	Children []OptionItem `gorm:"foreignKey:ParentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"children"`
+	Children []OptionItem `gorm:"foreignKey:ParentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // RepeatRule represents recurrence constraints.
 type RepeatRule struct {
-	ID             define.SnowflakeID `gorm:"type:bigint;primaryKey" json:"id"`
-	PlanID         define.SnowflakeID `gorm:"type:bigint;index;not null" json:"planId"`
-	Unit           RepeatUnit         `gorm:"not null" json:"unit"`
-	Interval       int                `gorm:"not null" json:"interval"`
-	PerRepeatCount *int               `json:"perRepeatCount"`
-	Months         IntArray           `gorm:"type:json" json:"months"`
-	Days           IntArray           `gorm:"type:json" json:"days"`
-	Weeks          IntArray           `gorm:"type:json" json:"weeks"`
-	Weekdays       IntArray           `gorm:"type:json" json:"weekdays"`
-	Times          StringArray        `gorm:"type:json" json:"times"` // e.g. ["09:00","18:30"]
-	StartDate      *time.Time         `json:"startDate"`
-	EndDate        *time.Time         `json:"endDate"`
+	ID             define.SnowflakeID `gorm:"type:bigint;primaryKey"`
+	PlanID         define.SnowflakeID `gorm:"type:bigint;index;not null"`
+	Unit           RepeatUnit         `gorm:"not null"`
+	Interval       int                `gorm:"not null"`
+	PerRepeatCount int
+	Months         IntArray    `gorm:"type:json"`
+	Days           IntArray    `gorm:"type:json"`
+	Weeks          IntArray    `gorm:"type:json"`
+	Weekdays       IntArray    `gorm:"type:json"`
+	Times          StringArray `gorm:"type:json"` // e.g. ["09:00","18:30"]
+	StartDate      time.Time
+	EndDate        time.Time
 
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // Record stores user-entered values (including start/finish date fields) as JSON.
@@ -272,28 +272,28 @@ type RepeatRule struct {
 //	  "repeatValues": [ { fieldId: any }, ... ]
 //	}
 type Record struct {
-	ID     define.SnowflakeID `gorm:"type:bigint;primaryKey" json:"id"`
-	PlanID define.SnowflakeID `gorm:"type:bigint;index;not null" json:"planId"`
-	Values JSONMap            `gorm:"type:json;not null" json:"values"`
+	ID     define.SnowflakeID `gorm:"type:bigint;primaryKey"`
+	PlanID define.SnowflakeID `gorm:"type:bigint;index;not null"`
+	Values JSONMap            `gorm:"type:json;not null"`
 
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // Statistics configuration for a plan.
 type Statistics struct {
-	ID            define.SnowflakeID  `gorm:"type:bigint;primaryKey" json:"id"`
-	PlanID        define.SnowflakeID  `gorm:"type:bigint;index;not null" json:"planId"`
-	Name          string              `gorm:"type:varchar(120);not null" json:"name"`
-	ChartType     StatisticsChartType `gorm:"not null" json:"chartType"`
-	XAxisType     string              `gorm:"type:varchar(60);not null" json:"xAxisType"`
-	XAxisPath     StringArray         `gorm:"type:json" json:"xAxisPath"`
-	YAxisField    define.SnowflakeID  `gorm:"type:bigint;not null" json:"yAxisField"`
-	XAxisIsRepeat bool                `gorm:"not null;default:false" json:"xAxisIsRepeat"`
-	YAxisIsRepeat bool                `gorm:"not null;default:false" json:"yAxisIsRepeat"`
+	ID            define.SnowflakeID  `gorm:"type:bigint;primaryKey"`
+	PlanID        define.SnowflakeID  `gorm:"type:bigint;index;not null"`
+	Name          string              `gorm:"type:varchar(120);not null"`
+	ChartType     StatisticsChartType `gorm:"not null"`
+	XAxisType     string              `gorm:"type:varchar(60);not null"`
+	XAxisPath     StringArray         `gorm:"type:json"`
+	YAxisField    define.SnowflakeID  `gorm:"type:bigint;not null"`
+	XAxisIsRepeat bool                `gorm:"not null;default:false"`
+	YAxisIsRepeat bool                `gorm:"not null;default:false"`
 
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // =====================================================

@@ -3,7 +3,6 @@ package response
 import (
 	"lifresh/define"
 	"lifresh/internal/domain"
-	"lifresh/models"
 )
 
 const (
@@ -83,70 +82,70 @@ func CreateSuccessResponse(resType int) Response {
 		res.init(successCode, successMsg)
 
 		return &res
-
-	case GET_USER_RES:
-		var res GetUserRes
-		res.init(successCode, successMsg)
-
-		return &res
-
-	case GET_ITEM_RES:
-		var res GetFolderRes
-		res.init(successCode, successMsg)
-
-		return &res
-
-	case SIGN_UP_RES:
-		var res SignUpRes
-		res.init(successCode, successMsg)
-
-		return &res
-	case CREATE_USER_RES:
-		var res CreateUserRes
-		res.init(successCode, successMsg)
-
-		return &res
-	case GET_ACCOUNT_ALL_DATA_RES:
-		var res GetAccountAllData
-		res.init(successCode, successMsg)
-
-		return &res
-
-	case GET_USER_ALL_DATA_RES:
-		var res GetUserAllData
-		res.init(successCode, successMsg)
-
-		return &res
-
-	case GET_MAIN_CATEGORY_RES:
-		var res GetMainCategoryRes
-		res.init(successCode, successMsg)
-
-		return &res
-
-	case GET_SUB_CATEGORY_RES:
-		var res GetSubCategoryRes
-		res.init(successCode, successMsg)
-
-		return &res
-
-	case GET_SCHEDULE_TASK_RES:
-		var res GetScheduleTaskRes
-		res.init(successCode, successMsg)
-
-		return &res
-
-	case GET_TO_DO_TASK_RES:
-		var res GetToDoTaskRes
-		res.init(successCode, successMsg)
-
-		return &res
-
-	case GET_MONEY_TASK_RES:
-		var res GetMoneyTaskRes
-		res.init(successCode, successMsg)
-
-		return &res
+	//
+	//case GET_USER_RES:
+	//	var res GetUserRes
+	//	res.init(successCode, successMsg)
+	//
+	//	return &res
+	//
+	//case GET_ITEM_RES:
+	//	var res GetFolderRes
+	//	res.init(successCode, successMsg)
+	//
+	//	return &res
+	//
+	//case SIGN_UP_RES:
+	//	var res SignUpRes
+	//	res.init(successCode, successMsg)
+	//
+	//	return &res
+	//case CREATE_USER_RES:
+	//	var res CreateUserRes
+	//	res.init(successCode, successMsg)
+	//
+	//	return &res
+	//case GET_ACCOUNT_ALL_DATA_RES:
+	//	var res GetAccountAllData
+	//	res.init(successCode, successMsg)
+	//
+	//	return &res
+	//
+	//case GET_USER_ALL_DATA_RES:
+	//	var res GetUserAllData
+	//	res.init(successCode, successMsg)
+	//
+	//	return &res
+	//
+	//case GET_MAIN_CATEGORY_RES:
+	//	var res GetMainCategoryRes
+	//	res.init(successCode, successMsg)
+	//
+	//	return &res
+	//
+	//case GET_SUB_CATEGORY_RES:
+	//	var res GetSubCategoryRes
+	//	res.init(successCode, successMsg)
+	//
+	//	return &res
+	//
+	//case GET_SCHEDULE_TASK_RES:
+	//	var res GetScheduleTaskRes
+	//	res.init(successCode, successMsg)
+	//
+	//	return &res
+	//
+	//case GET_TO_DO_TASK_RES:
+	//	var res GetToDoTaskRes
+	//	res.init(successCode, successMsg)
+	//
+	//	return &res
+	//
+	//case GET_MONEY_TASK_RES:
+	//	var res GetMoneyTaskRes
+	//	res.init(successCode, successMsg)
+	//
+	//	return &res
 
 	default:
 		var res BasicRes
@@ -176,6 +175,7 @@ type LoginRes struct {
 	BaseResponse
 	AccessToken  string          `json:"access_token"`
 	RefreshToken string          `json:"refresh_token"`
+	IdToken      string          `json:"id_token"`
 	Account      *domain.Account `json:"account"`
 }
 
@@ -202,131 +202,132 @@ func (res *PingRes) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }
 
-type GetUserRes struct {
-	BaseResponse
-	User models.User `json:"user"`
-}
-
-func (res *GetUserRes) init(code int, msg string) {
-	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
-}
-
-type GetFolderRes struct {
-	BaseResponse
-	Folder models.Folder `json:"folder"`
-}
-
-func (res *GetFolderRes) init(code int, msg string) {
-	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
-}
-
-type GetPlanRes struct {
-	BaseResponse
-	Plan models.Folder `json:"plan"`
-}
-
-func (res *GetPlanRes) init(code int, msg string) {
-	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
-}
-
-type SignUpRes struct {
-	BaseResponse
-}
-
-func (res *SignUpRes) init(code int, msg string) {
-	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
-}
-
-type CreateUserRes struct {
-	BaseResponse
-}
-
-func (res *CreateUserRes) init(code int, msg string) {
-	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
-}
-
-type GetAccountAllData struct {
-	BaseResponse
-	User                   models.User                 `json:"user"`
-	PlanList               []models.Plan               `json:"plan_list"`
-	PlanRecordList         []models.PlanRecord         `json:"plan_record_list"`
-	PlanRecordOperatorList []models.PlanRecordOperator `json:"plan_record_operator_list"`
-	PlanGoalList           []models.PlanGoal           `json:"plan_goal_list"`
-}
-
-func (res *GetAccountAllData) init(code int, msg string) {
-	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
-}
-
-type GetUserAllData struct {
-	BaseResponse
-	Planner          models.Planner        `json:"planner"`
-	TodayList        []models.Today        `json:"todayList"`
-	MainCategoryList []models.MainCategory `json:"mainCategoryList"`
-	SubCategoryList  []models.SubCategory  `json:"subCategoryList"`
-	ScheduleTaskList []models.ScheduleTask `json:"scheduleTaskList"`
-	ToDoTaskList     []models.ToDoTask     `json:"toDoTaskList"`
-	MoneyTaskList    []models.MoneyTask    `json:"moneyTaskList"`
-}
-
-func (res *GetUserAllData) init(code int, msg string) {
-	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
-}
-
-type GetMainCategoryRes struct {
-	BaseResponse
-	Planner          models.Planner        `json:"planner"`
-	TodayList        []models.Today        `json:"todayList"`
-	MainCategoryList []models.MainCategory `json:"mainCategoryList"`
-}
-
-func (res *GetMainCategoryRes) init(code int, msg string) {
-	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
-}
-
-type GetSubCategoryRes struct {
-	BaseResponse
-	Planner         models.Planner       `json:"planner"`
-	TodayList       []models.Today       `json:"todayList"`
-	SubCategoryList []models.SubCategory `json:"subCategoryList"`
-}
-
-func (res *GetSubCategoryRes) init(code int, msg string) {
-	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
-}
-
-type GetScheduleTaskRes struct {
-	BaseResponse
-	Planner          models.Planner        `json:"planner"`
-	TodayList        []models.Today        `json:"todayList"`
-	ScheduleTaskList []models.ScheduleTask `json:"scheduleTaskList"`
-}
-
-func (res *GetScheduleTaskRes) init(code int, msg string) {
-	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
-}
-
-type GetToDoTaskRes struct {
-	BaseResponse
-	Planner      models.Planner    `json:"planner"`
-	TodayList    []models.Today    `json:"todayList"`
-	ToDoTaskList []models.ToDoTask `json:"toDoTaskList"`
-}
-
-func (res *GetToDoTaskRes) init(code int, msg string) {
-	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
-}
-
-type GetMoneyTaskRes struct {
-	BaseResponse
-	Planner          models.Planner        `json:"planner"`
-	TodayList        []models.Today        `json:"todayList"`
-	MainCategoryList []models.MainCategory `json:"mainCategoryList"`
-	SubCategoryList  []models.SubCategory  `json:"subCategoryList"`
-	MoneyTaskList    []models.MoneyTask    `json:"moneyTaskList"`
-	MoneyManagerList []models.MoneyManager `json:"moneyManagerList"`
-}
-
-func (res *GetMoneyTaskRes) init(code int, msg string) {
-	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
-}
+//
+//type GetUserRes struct {
+//	BaseResponse
+//	User models.User `json:"user"`
+//}
+//
+//func (res *GetUserRes) init(code int, msg string) {
+//	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+//}
+//
+//type GetFolderRes struct {
+//	BaseResponse
+//	Folder models.Folder `json:"folder"`
+//}
+//
+//func (res *GetFolderRes) init(code int, msg string) {
+//	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+//}
+//
+//type GetPlanRes struct {
+//	BaseResponse
+//	Plan models.Folder `json:"plan"`
+//}
+//
+//func (res *GetPlanRes) init(code int, msg string) {
+//	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+//}
+//
+//type SignUpRes struct {
+//	BaseResponse
+//}
+//
+//func (res *SignUpRes) init(code int, msg string) {
+//	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+//}
+//
+//type CreateUserRes struct {
+//	BaseResponse
+//}
+//
+//func (res *CreateUserRes) init(code int, msg string) {
+//	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+//}
+//
+//type GetAccountAllData struct {
+//	BaseResponse
+//	User                   models.User                 `json:"user"`
+//	PlanList               []models.Plan               `json:"plan_list"`
+//	PlanRecordList         []models.PlanRecord         `json:"plan_record_list"`
+//	PlanRecordOperatorList []models.PlanRecordOperator `json:"plan_record_operator_list"`
+//	PlanGoalList           []models.PlanGoal           `json:"plan_goal_list"`
+//}
+//
+//func (res *GetAccountAllData) init(code int, msg string) {
+//	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+//}
+//
+//type GetUserAllData struct {
+//	BaseResponse
+//	Planner          models.Planner        `json:"planner"`
+//	TodayList        []models.Today        `json:"todayList"`
+//	MainCategoryList []models.MainCategory `json:"mainCategoryList"`
+//	SubCategoryList  []models.SubCategory  `json:"subCategoryList"`
+//	ScheduleTaskList []models.ScheduleTask `json:"scheduleTaskList"`
+//	ToDoTaskList     []models.ToDoTask     `json:"toDoTaskList"`
+//	MoneyTaskList    []models.MoneyTask    `json:"moneyTaskList"`
+//}
+//
+//func (res *GetUserAllData) init(code int, msg string) {
+//	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+//}
+//
+//type GetMainCategoryRes struct {
+//	BaseResponse
+//	Planner          models.Planner        `json:"planner"`
+//	TodayList        []models.Today        `json:"todayList"`
+//	MainCategoryList []models.MainCategory `json:"mainCategoryList"`
+//}
+//
+//func (res *GetMainCategoryRes) init(code int, msg string) {
+//	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+//}
+//
+//type GetSubCategoryRes struct {
+//	BaseResponse
+//	Planner         models.Planner       `json:"planner"`
+//	TodayList       []models.Today       `json:"todayList"`
+//	SubCategoryList []models.SubCategory `json:"subCategoryList"`
+//}
+//
+//func (res *GetSubCategoryRes) init(code int, msg string) {
+//	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+//}
+//
+//type GetScheduleTaskRes struct {
+//	BaseResponse
+//	Planner          models.Planner        `json:"planner"`
+//	TodayList        []models.Today        `json:"todayList"`
+//	ScheduleTaskList []models.ScheduleTask `json:"scheduleTaskList"`
+//}
+//
+//func (res *GetScheduleTaskRes) init(code int, msg string) {
+//	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+//}
+//
+//type GetToDoTaskRes struct {
+//	BaseResponse
+//	Planner      models.Planner    `json:"planner"`
+//	TodayList    []models.Today    `json:"todayList"`
+//	ToDoTaskList []models.ToDoTask `json:"toDoTaskList"`
+//}
+//
+//func (res *GetToDoTaskRes) init(code int, msg string) {
+//	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+//}
+//
+//type GetMoneyTaskRes struct {
+//	BaseResponse
+//	Planner          models.Planner        `json:"planner"`
+//	TodayList        []models.Today        `json:"todayList"`
+//	MainCategoryList []models.MainCategory `json:"mainCategoryList"`
+//	SubCategoryList  []models.SubCategory  `json:"subCategoryList"`
+//	MoneyTaskList    []models.MoneyTask    `json:"moneyTaskList"`
+//	MoneyManagerList []models.MoneyManager `json:"moneyManagerList"`
+//}
+//
+//func (res *GetMoneyTaskRes) init(code int, msg string) {
+//	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+//}
