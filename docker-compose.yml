@@ -60,6 +60,8 @@ services:
             lifreshredis:
                 condition: service_started
             # - fluentd-client
+        environment:
+            - GOOGLE_OAUTH_CLIENT_IDS=183293757909-a4b1nh40l3ef0e5eclvu1smht3mremo3.apps.googleusercontent.com,183293757909-tt2er27edmj1cj6kplkikdb5vljlktoj.apps.googleusercontent.com,183293757909-v14ius78jb8p6onuji6jsa82k0ljnu6l.apps.googleusercontent.com
         extra_hosts:
             - host.docker.internal:host-gateway
 
