@@ -3,9 +3,9 @@ FROM nginx:alpine
 # ACME 챌린지 경로 생성 (certbot과 볼륨 공유)
 RUN mkdir -p /var/www/certbot
 
-# 설정 복사
+# nginx.conf 전체 복사
+COPY ./nginx.conf /etc/nginx/nginx.conf
 COPY ./conf.d/default.conf /etc/nginx/conf.d/default.conf
-
 # 로그 디렉토리(선택): 커스텀 경로 쓰면 만들어 둡니다
 RUN mkdir -p /var/log/nginx
 

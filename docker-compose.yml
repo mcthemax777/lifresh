@@ -1,4 +1,3 @@
-version: "3.7"
 services:
     lifreshdb:
         # 컨테이너 이름 지정
