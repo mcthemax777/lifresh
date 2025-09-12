@@ -122,11 +122,6 @@ services:
         links:
             - lifreshapp
         restart: always
-    certbot:
-        image: certbot/certbot
-        volumes:
-            - ./certbot/conf:/etc/letsencrypt
-            - ./certbot/www:/var/www/certbot
 
     # jenkins:
     #     image: jenkins/jenkins:lts
