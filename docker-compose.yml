@@ -7,7 +7,7 @@ services:
         image: mysql:8.0
         restart: always
         environment:
-            MYSQL_DATABASE: lifresh_planner
+            MYSQL_DATABASE: lifresh
             MYSQL_USER: lifresh
             MYSQL_PASSWORD: lifresh
             MYSQL_ROOT_PASSWORD: lifresh
@@ -24,7 +24,11 @@ services:
         # 연결 포트 지정
         ports:
             - "3306:3306"
-
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-plifresh"]
+            interval: 5s
+            timeout: 3s
+            retries: 20
     lifreshredis:
         image: redis:latest
         container_name: lifreshredis
@@ -52,12 +56,10 @@ services:
             - 8000:8000
         # db 컨테이너가 올라간 후 app 컨테이너를 올린다.
         depends_on:
-            - lifreshdb
-            - lifreshredis
-            # - fluentd-client
-        links:
-            - lifreshdb
-            - lifreshredis
+            lifreshdb:
+                condition: service_healthy
+            lifreshredis:
+                condition: service_started
             # - fluentd-client
         extra_hosts:
             - host.docker.internal:host-gateway
@@ -125,15 +127,15 @@ services:
             - ./certbot/conf:/etc/letsencrypt
             - ./certbot/www:/var/www/certbot
 
-    jenkins:
-        image: jenkins/jenkins:lts
-        container_name: jenkins
-        environment:
-            - TZ=Asia/Seoul
-        user: root
-        volumes:
-        - /var/jenkins_home:/var/jenkins_home
-        - /var/run/docker.sock:/var/run/docker.sock
-        ports:
-        - 7777:8080
-        - 50000:50000
+    # jenkins:
+    #     image: jenkins/jenkins:lts
+    #     container_name: jenkins
+    #     environment:
+    #         - TZ=Asia/Seoul
+    #     user: root
+    #     volumes:
+    #     - /var/jenkins_home:/var/jenkins_home
+    #     - /var/run/docker.sock:/var/run/docker.sock
+    #     ports:
+    #     - 7777:8080
+    #     - 50000:50000

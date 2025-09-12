@@ -87,7 +87,7 @@ func (n CustomNamingOption) ColumnName(_ string, column string) string {
 func InitDB() *gorm.DB {
 	initIDGen()
 
-	var localDbInfo = DBInfo{"root", "lifresh", "127.0.0.1:3306", "mysql", "lifresh"}
+	var localDbInfo = DBInfo{"root", "lifresh", "host.docker.internal:3306", "mysql", "lifresh"}
 
 	if define.OsType == define.OsTypeWindows {
 		localDbInfo = DBInfo{"root", "lifresh", "127.0.0.1:3306", "mysql", "lifresh"}
@@ -96,8 +96,8 @@ func InitDB() *gorm.DB {
 	dsn := localDbInfo.user + ":" + localDbInfo.pwd + "@tcp(" + localDbInfo.url + ")/" + localDbInfo.database + "?charset=utf8&parseTime=true"
 
 	namingOption := NewNamingOption(
-		"",   // TablePrefix (예: "cm2_")
-		true, // SingularTable
+		"",                                                 // TablePrefix (예: "cm2_")
+		true,                                               // SingularTable
 		[]string{"URL", "ID", "API", "HTML", "JSON", "IP"}, // 필요한 약어 추가
 	)
 	result, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
