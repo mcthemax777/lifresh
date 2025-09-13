@@ -89,7 +89,7 @@ func InitDB() *gorm.DB {
 
 	var localDbInfo = DBInfo{"root", "lifresh", "host.docker.internal:3306", "mysql", "lifresh"}
 
-	if define.OsType == define.OsTypeWindows {
+	if define.OsType == define.OsTypeWindows || define.OsType == define.OsTypeMac {
 		localDbInfo = DBInfo{"root", "lifresh", "127.0.0.1:3306", "mysql", "lifresh"}
 	}
 
