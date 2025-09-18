@@ -14,10 +14,15 @@ type UserService struct {
 	txm         *txmgr.Manager
 	accountRepo *repository.AccountRepo
 	userRepo    *repository.UserRepo
+	folderRepo  *repository.FolderRepo
 }
 
-func NewUserService(txm *txmgr.Manager, accountRepo *repository.AccountRepo, userRepo *repository.UserRepo) *UserService {
-	return &UserService{txm: txm, accountRepo: accountRepo, userRepo: userRepo}
+func NewUserService(txm *txmgr.Manager,
+	accountRepo *repository.AccountRepo,
+	userRepo *repository.UserRepo,
+	folderRepo *repository.FolderRepo,
+) *UserService {
+	return &UserService{txm: txm, accountRepo: accountRepo, userRepo: userRepo, folderRepo: folderRepo}
 }
 
 func (s *UserService) Login(account *domain.Account) (*domain.Account, *apperr.AppError) {
@@ -38,8 +43,31 @@ func (s *UserService) Login(account *domain.Account) (*domain.Account, *apperr.A
 				return apperr.New(202, "insert error", err)
 			}
 
-			user := &domain.User{ID: 0, AccountID: findAccount.ID, Nickname: findAccount.ProviderUID, Bio: "", UpdatedAt: time.Now()}
+			user := &domain.User{
+				ID:        0,
+				AccountID: findAccount.ID,
+				Nickname:  findAccount.ProviderUID,
+				Bio:       "",
+				UpdatedAt: time.Now(),
+			}
 			user, err = s.userRepo.Save(user)
+			if err != nil {
+				return apperr.New(202, "insert error", err)
+			}
+
+			root := &domain.Folder{
+				ID:              0,
+				ParentID:        nil,
+				UserID:          user.ID,
+				Order:           0,
+				Color:           0,
+				Name:            "최상위 폴더",
+				ChildrenFolders: nil,
+				Plans:           nil,
+				CreatedAt:       time.Now(),
+				UpdatedAt:       time.Now(),
+			}
+			root, err = s.folderRepo.Save(root)
 			if err != nil {
 				return apperr.New(202, "insert error", err)
 			}

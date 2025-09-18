@@ -198,6 +198,11 @@ type PingRes struct {
 	BaseResponse
 }
 
+type GetUserRes struct {
+	Account *domain.Account `json:"account"`
+	BaseResponse
+}
+
 func (res *PingRes) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }

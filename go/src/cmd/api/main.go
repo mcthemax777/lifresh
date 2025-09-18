@@ -286,17 +286,19 @@ func main() {
 	//r.Use(auth.JWTAuthSkipper())
 
 	//repo 생성
-	userRepo := repository.NewUserRepo(dbConn)
 	accountRepo := repository.NewAccountRepo(dbConn)
+	userRepo := repository.NewUserRepo(dbConn)
+	folderRepo := repository.NewFolderRepo(dbConn)
 
 	//service 생성
 	authService := service.NewAuthService()
-	userService := service.NewUserService(txMgr, accountRepo, userRepo)
+	userService := service.NewUserService(txMgr, accountRepo, userRepo, folderRepo)
 
 	//handler 생성
 	loginHandler := handler.NewLoginHandler(authService, userService)
 	refreshHandler := handler.NewRefreshHandler()
 	pingHandler := handler.NewPingHandler()
+	getUserHandler := handler.NewPingHandler()
 
 	// Auth (미들웨어에서 자동 스킵)
 	authGroup := r.Group(define.RouterAuth)

@@ -163,16 +163,12 @@ type User struct {
 
 // Folder represents a node that can contain child folders and plans.
 type Folder struct {
-	ID       define.SnowflakeID  `gorm:"type:bigint;primaryKey"`
-	ParentID *define.SnowflakeID `gorm:"type:bigint;index"`
-	UserID   define.SnowflakeID  `gorm:"type:bigint;index;not null"`
-	Order    int                 `gorm:"not null;default:0"`
-	Color    int                 `gorm:"not null"`
-	Name     string              `gorm:"type:varchar(120);not null"`
-
-	ChildrenFolders []Folder `gorm:"foreignKey:ParentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Plans           []Plan   `gorm:"foreignKey:ParentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-
+	ID        define.SnowflakeID  `gorm:"type:bigint;primaryKey"`
+	ParentID  *define.SnowflakeID `gorm:"type:bigint;index"`
+	UserID    define.SnowflakeID  `gorm:"type:bigint;index;not null"`
+	Order     int                 `gorm:"not null;default:0"`
+	Color     int                 `gorm:"not null"`
+	Name      string              `gorm:"type:varchar(120);not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
