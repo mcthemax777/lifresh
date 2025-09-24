@@ -41,16 +41,62 @@ const (
 	SocialTypeApple
 )
 
+type GoalRepeatCycleType int32
+
+const (
+	CycleDay GoalRepeatCycleType = iota
+	CycleWeek
+	CycleMonth
+	CycleYear
+	CycleWhole
+)
+
+type DateType int32
+
+const (
+	DateTypeDateTime DateType = iota
+	DateTypePeriod
+)
+
+type RepeatUnit int32
+
+const (
+	RepeatDay RepeatUnit = iota
+	RepeatWeek
+	RepeatMonth
+	RepeatYear
+	RepeatCountOnly
+)
+
+type StatisticsChartType int32
+
+const (
+	ChartPie StatisticsChartType = iota
+	ChartBar
+)
+
+type FileType int8
+
+const (
+	FileTypeFolder FileType = iota
+	FileTypePlan
+)
+
 const (
 	RouterAuth = "/v1/auth"
 	RouterApi  = "/v1/api"
 )
 const (
-	ApiLogin   = "/login"
-	ApiRefresh = "/refresh"
+	ApiLogin    = "/login"
+	ApiJwtLogin = "/jwt-login"
+	ApiRefresh  = "/refresh"
 
-	ApiPing    = "/ping"
-	ApiGetItem = "/item"
+	ApiPing         = "/ping"
+	ApiGetUser      = "/user"
+	ApiCreateUser   = "/create-user"
+	ApiCreateFolder = "/create-folder"
+	ApiUpdateFolder = "/update-folder"
+	ApiDeleteFolder = "/delete-folder"
 )
 
 // =====================================================
@@ -65,11 +111,17 @@ func (id SnowflakeID) MarshalJSON() ([]byte, error) {
 
 // Accept both string and number in requests
 func (id *SnowflakeID) UnmarshalJSON(b []byte) error {
+	if len(b) == 0 {
+		*id = SnowflakeID(0)
+		return nil
+	}
 	var s string
 	if err := json.Unmarshal(b, &s); err == nil {
 		v, err := strconv.ParseInt(s, 10, 64)
 		if err != nil {
-			return err
+			//일단 공백오면 이쪽으로 오니 0으로 세팅
+			*id = SnowflakeID(0)
+			return nil
 		}
 		*id = SnowflakeID(v)
 		return nil
@@ -90,6 +142,10 @@ func (id *SnowflakeID) Scan(value any) error {
 		*id = SnowflakeID(v)
 		return nil
 	case []byte:
+		if len(v) == 0 {
+			*id = SnowflakeID(0)
+			return nil
+		}
 		i, err := strconv.ParseInt(string(v), 10, 64)
 		if err != nil {
 			return err
@@ -97,6 +153,10 @@ func (id *SnowflakeID) Scan(value any) error {
 		*id = SnowflakeID(i)
 		return nil
 	case string:
+		if len(v) == 0 {
+			*id = SnowflakeID(0)
+			return nil
+		}
 		i, err := strconv.ParseInt(v, 10, 64)
 		if err != nil {
 			return err
@@ -108,4 +168,13 @@ func (id *SnowflakeID) Scan(value any) error {
 		return nil
 	}
 	return fmt.Errorf("unsupported Scan type for SnowflakeID: %T", value)
+}
+
+// 공통적으로 ID가 비어있을 경우 새로 생성
+func IfZero[T comparable](val T, fallback T) T {
+	var zero T
+	if val == zero {
+		return fallback
+	}
+	return val
 }

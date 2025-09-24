@@ -1,53 +1,69 @@
 package repository
 
 import (
-	"gorm.io/gorm"
 	"lifresh/db"
-	"lifresh/internal/core/apperr"
+	"lifresh/define"
 	"lifresh/internal/domain"
 	"lifresh/internal/repository/model"
+
+	"gorm.io/gorm"
 )
 
-type AccountRepo struct{ dbConn *gorm.DB }
+type AccountRepo struct {
+	*BaseRepo[model.Account, domain.Account]
+}
 
-func NewAccountRepo(dbConn *gorm.DB) *AccountRepo {
-	return &AccountRepo{dbConn: dbConn}
+func NewAccountRepo(db *gorm.DB) *AccountRepo {
+	return &AccountRepo{NewBaseRepo[model.Account, domain.Account](db)}
+}
+
+func (r *AccountRepo) ToDomain(m *model.Account) *domain.Account {
+	return &domain.Account{
+		ID:          m.ID,
+		Name:        m.Name,
+		Email:       m.Email,
+		PhotoURL:    m.PhotoURL,
+		SocialType:  define.SocialType(m.SocialType),
+		ProviderUID: m.ProviderUID,
+		CreatedAt:   m.CreatedAt,
+		UpdatedAt:   m.UpdatedAt,
+	}
+}
+
+func (r *AccountRepo) FromDomain(d *domain.Account) *model.Account {
+	return &model.Account{
+		ID:          define.IfZero(d.ID, db.NextID()),
+		Name:        d.Name,
+		Email:       d.Email,
+		PhotoURL:    d.PhotoURL,
+		SocialType:  int8(d.SocialType),
+		ProviderUID: d.ProviderUID,
+		CreatedAt:   d.CreatedAt,
+		UpdatedAt:   d.UpdatedAt,
+	}
+}
+
+// CRUD methods
+func (r *AccountRepo) FindByID(id define.SnowflakeID) (*domain.Account, error) {
+	return r.BaseRepo.FindById(r, id)
 }
 
 func (r *AccountRepo) FindByUID(uid string) (*domain.Account, error) {
-	var a domain.Account
-
-	r.dbConn.First(&a, "prov_ider_uid = ?", uid)
-
-	if a.ID == 0 {
-		return nil, apperr.New(202, "not find account", nil)
-	}
-	return &a, nil
+	return r.First(r, "provider_uid = ?", uid)
 }
-func (r *AccountRepo) Save(account *domain.Account) (*domain.Account, error) {
-	if err := r.dbConn.Error; err != nil {
-		return account, err
-	}
 
-	a := &model.Account{
-		ID:          db.NextID(),
-		Name:        account.Name,
-		Email:       account.Email,
-		PhotoURL:    account.PhotoURL,
-		SocialType:  int8(account.Social),
-		ProviderUID: account.ProviderUID,
-		CreatedAt:   account.CreatedAt,
-		UpdatedAt:   account.UpdatedAt,
-	}
+func (r *AccountRepo) FindAll() ([]*domain.Account, error) {
+	return r.Find(r)
+}
 
-	result := r.dbConn.Create(&a)
+func (r *AccountRepo) Save(d *domain.Account) (*domain.Account, error) {
+	return r.BaseRepo.Save(r, d)
+}
 
-	account.ID = a.ID
-	if result.Error != nil {
-		return account, result.Error
-	}
+func (r *AccountRepo) Update(d *domain.Account) (*domain.Account, error) {
+	return r.BaseRepo.Update(r, d)
+}
 
-	account.ID = a.ID
-
-	return account, nil
+func (r *AccountRepo) DeleteByUID(uid string) error {
+	return r.Delete("provider_uid = ?", uid)
 }

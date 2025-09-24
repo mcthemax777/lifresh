@@ -61,7 +61,7 @@ func (s *AuthService) Auth(socialToken string, socialType define.SocialType) (*d
 	}
 
 	account.ProviderUID = uid
-	account.Social = socialType
+	account.SocialType = socialType
 	account.Email = email
 	account.Name = name
 

@@ -2,206 +2,166 @@ package domain
 
 import (
 	"lifresh/define"
-	"time"
-)
-
-type GoalRepeatCycleType int32
-
-const (
-	CycleDay GoalRepeatCycleType = iota
-	CycleWeek
-	CycleMonth
-	CycleYear
-	CycleWhole
-)
-
-type DateType int32
-
-const (
-	DateTypeDateTime DateType = iota
-	DateTypePeriod
-)
-
-type RepeatUnit int32
-
-const (
-	RepeatDay RepeatUnit = iota
-	RepeatWeek
-	RepeatMonth
-	RepeatYear
-	RepeatCountOnly
-)
-
-type StatisticsChartType int32
-
-const (
-	ChartPie StatisticsChartType = iota
-	ChartBar
+	"lifresh/internal/core"
 )
 
 // =====================================================
 // Core models (IDs are BIGINT Snowflake)
 // =====================================================
 
-// Account: authentication account; separate from domain User profile.
-// NOTE: ProviderUID keeps the external provider's user id (string).
-type Account struct {
-	ID          define.SnowflakeID
-	Name        string
-	Email       string
-	PhotoURL    string
-	Social      define.SocialType
-	ProviderUID string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+type ChildSystemFile interface{}
 
-	//User *User `gorm:"-" json:"user"`
+// Account: authentication account; separate from domain User profile.
+type Account struct {
+	ID          define.SnowflakeID `json:"id"`
+	Name        string             `json:"name"`
+	Email       string             `json:"email"`
+	PhotoURL    string             `json:"photoUrl"`
+	SocialType  define.SocialType  `json:"socialType"`
+	ProviderUID string             `json:"providerUid"`
+	CreatedAt   core.CustomTime    `json:"createdAt"`
+	UpdatedAt   core.CustomTime    `json:"updatedAt"`
+
+	User *User `json:"user"`
 }
 
 // User is the domain profile. Root points to the root Folder.
 type User struct {
-	ID         define.SnowflakeID
-	AccountID  define.SnowflakeID
-	Nickname   string
-	Bio        string
-	ProfileURL string
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	ID         define.SnowflakeID `json:"id"`
+	AccountID  define.SnowflakeID `json:"accountId"`
+	Nickname   string             `json:"nickname"`
+	Bio        string             `json:"bio"`
+	ProfileURL string             `json:"profileUrl"`
+	CreatedAt  core.CustomTime    `json:"createdAt"`
+	UpdatedAt  core.CustomTime    `json:"updatedAt"`
 
-	Root *Folder
+	Root *Folder `json:"root"`
+}
+
+type SystemFile struct {
+	ID        define.SnowflakeID `json:"id"`
+	Name      string             `json:"name"`
+	ParentID  define.SnowflakeID `json:"parentId"`
+	UserID    define.SnowflakeID `json:"userId"`
+	Order     int                `json:"order"`
+	Color     int                `json:"color"`
+	Type      define.FileType    `json:"type"`
+	CreatedAt core.CustomTime    `json:"createdAt"`
+	UpdatedAt core.CustomTime    `json:"updatedAt"`
 }
 
 // Folder represents a node that can contain child folders and plans.
 type Folder struct {
-	ID       define.SnowflakeID
-	ParentID *define.SnowflakeID
-	UserID   define.SnowflakeID
-	Order    int
-	Color    int
-	Name     string
+	SystemFile
 
-	ChildrenFolders []Folder
-	Plans           []Plan
-
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Children []ChildSystemFile `json:"children"`
 }
 
 // Plan captures configuration and child entities.
 type Plan struct {
-	ID          define.SnowflakeID
-	ParentID    *define.SnowflakeID
-	UserID      define.SnowflakeID
-	Order       int
-	Color       int
-	Name        string
-	Description string
-	StartDate   *time.Time
-	FinishDate  *time.Time
-	DateType    DateType
+	SystemFile
 
-	MainRecordFieldID *define.SnowflakeID
+	Description string          `json:"description"`
+	StartDate   core.CustomTime `json:"startDate"`
+	FinishDate  core.CustomTime `json:"finishDate"`
+	DateType    define.DateType `json:"dateType"`
 
-	Goals        []Goal
-	RecordFields []RecordField
-	RepeatRules  []RepeatRule
-	Records      []Record
-	Statistics   []Statistics
+	MainRecordFieldID define.SnowflakeID `json:"mainRecordFieldId"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Goals        []Goal        `json:"goals"`
+	RecordFields []RecordField `json:"recordFields"`
+	RepeatRules  []RepeatRule  `json:"repeatRules"`
+	Records      []Record      `json:"records"`
+	Statistics   []Statistics  `json:"statistics"`
+
+	CreatedAt core.CustomTime `json:"createdAt"`
+	UpdatedAt core.CustomTime `json:"updatedAt"`
 }
 
 // Goal mirrors GoalEntity.
 type Goal struct {
-	ID         define.SnowflakeID
-	PlanID     define.SnowflakeID
-	CycleType  GoalRepeatCycleType
-	Interval   int
-	RecordID   *define.SnowflakeID
-	Count      int
-	StartDate  *time.Time
-	FinishDate *time.Time
+	ID         define.SnowflakeID         `json:"id"`
+	PlanID     define.SnowflakeID         `json:"planId"`
+	CycleType  define.GoalRepeatCycleType `json:"cycleType"`
+	Interval   int                        `json:"interval"`
+	RecordID   define.SnowflakeID         `json:"recordId"`
+	Count      int                        `json:"count"`
+	StartDate  core.CustomTime            `json:"startDate"`
+	FinishDate core.CustomTime            `json:"finishDate"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt core.CustomTime `json:"createdAt"`
+	UpdatedAt core.CustomTime `json:"updatedAt"`
 }
 
 // RecordField corresponds to RecordFieldEntity; both regular and repeat fields live here.
 type RecordField struct {
-	ID            define.SnowflakeID
-	PlanID        define.SnowflakeID
-	Name          string
-	Type          string
-	IsRepeatField bool
-	Unit          *string
+	ID            define.SnowflakeID `json:"id"`
+	PlanID        define.SnowflakeID `json:"planId"`
+	Name          string             `json:"name"`
+	Type          string             `json:"type"`
+	IsRepeatField bool               `json:"isRepeatField"`
+	Unit          string             `json:"unit"`
 
-	Options []OptionItem
+	Options []OptionItem `json:"options"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt core.CustomTime `json:"createdAt"`
+	UpdatedAt core.CustomTime `json:"updatedAt"`
 }
 
 // OptionItem is a tree under a RecordField.
 type OptionItem struct {
-	ID            define.SnowflakeID
-	RecordFieldID define.SnowflakeID
-	ParentID      *define.SnowflakeID
-	Name          string
+	ID            define.SnowflakeID `json:"id"`
+	RecordFieldID define.SnowflakeID `json:"recordFieldId"`
+	ParentID      define.SnowflakeID `json:"parentId"`
+	Name          string             `json:"name"`
 
-	Children []OptionItem
+	Children []OptionItem `json:"children"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt core.CustomTime `json:"createdAt"`
+	UpdatedAt core.CustomTime `json:"updatedAt"`
 }
 
 // RepeatRule represents recurrence constraints.
 type RepeatRule struct {
-	ID             define.SnowflakeID
-	PlanID         define.SnowflakeID
-	Unit           RepeatUnit
-	Interval       int
-	PerRepeatCount *int
-	Months         []int
-	Days           []int
-	Weeks          []int
-	Weekdays       []int
-	Times          []string
-	StartDate      *time.Time
-	EndDate        *time.Time
+	ID             define.SnowflakeID `json:"id"`
+	PlanID         define.SnowflakeID `json:"planId"`
+	Unit           define.RepeatUnit  `json:"unit"`
+	Interval       int                `json:"interval"`
+	PerRepeatCount int                `json:"perRepeatCount"`
+	Months         []int              `json:"months"`
+	Days           []int              `json:"days"`
+	Weeks          []int              `json:"weeks"`
+	Weekdays       []int              `json:"weekdays"`
+	Times          []string           `json:"times"`
+	StartDate      core.CustomTime    `json:"startDate"`
+	EndDate        core.CustomTime    `json:"endDate"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt core.CustomTime `json:"createdAt"`
+	UpdatedAt core.CustomTime `json:"updatedAt"`
 }
 
-// Record stores user-entered values (including start/finish date fields) as JSON.
-// Expected shape (app contract):
-//
-//	{
-//	  "fieldValues": { fieldId: any, startDateTime: string, finishDateTime: string },
-//	  "repeatValues": [ { fieldId: any }, ... ]
-//	}
+// Record stores user-entered values.
 type Record struct {
-	ID     define.SnowflakeID
-	PlanID define.SnowflakeID
-	Values map[string]any
+	ID     define.SnowflakeID `json:"id"`
+	PlanID define.SnowflakeID `json:"planId"`
+	Values map[string]any     `json:"values"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt core.CustomTime `json:"createdAt"`
+	UpdatedAt core.CustomTime `json:"updatedAt"`
 }
 
 // Statistics configuration for a plan.
 type Statistics struct {
-	ID            define.SnowflakeID
-	PlanID        define.SnowflakeID
-	Name          string
-	ChartType     StatisticsChartType
-	XAxisType     string
-	XAxisPath     []string
-	YAxisField    define.SnowflakeID
-	XAxisIsRepeat bool
-	YAxisIsRepeat bool
+	ID            define.SnowflakeID         `json:"id"`
+	PlanID        define.SnowflakeID         `json:"planId"`
+	Name          string                     `json:"name"`
+	ChartType     define.StatisticsChartType `json:"chartType"`
+	XAxisType     string                     `json:"xAxisType"`
+	XAxisPath     []string                   `json:"xAxisPath"`
+	YAxisField    define.SnowflakeID         `json:"yAxisField"`
+	XAxisIsRepeat bool                       `json:"xAxisIsRepeat"`
+	YAxisIsRepeat bool                       `json:"yAxisIsRepeat"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt core.CustomTime `json:"createdAt"`
+	UpdatedAt core.CustomTime `json:"updatedAt"`
 }

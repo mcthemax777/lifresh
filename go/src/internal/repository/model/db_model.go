@@ -4,7 +4,7 @@ import (
 	"database/sql/driver"
 	"gorm.io/gorm"
 	"lifresh/define"
-	"time"
+	"lifresh/internal/core"
 )
 
 import (
@@ -144,8 +144,8 @@ type Account struct {
 	PhotoURL    string             `gorm:"type:varchar(255)"`
 	SocialType  int8               `gorm:"not null" `
 	ProviderUID string             `gorm:"type:varchar(191);uniqueIndex"`
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	CreatedAt   core.CustomTime
+	UpdatedAt   core.CustomTime
 }
 
 // User is the domain profile. Root points to the root Folder.
@@ -155,47 +155,39 @@ type User struct {
 	Nickname   string             `gorm:"type:varchar(60);not null"`
 	Bio        string             `gorm:"type:varchar(255)"`
 	ProfileURL string             `gorm:"type:varchar(255)"`
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-
-	Root *Folder `gorm:"-" json:"root"`
+	CreatedAt  core.CustomTime
+	UpdatedAt  core.CustomTime
 }
 
 // Folder represents a node that can contain child folders and plans.
 type Folder struct {
-	ID        define.SnowflakeID  `gorm:"type:bigint;primaryKey"`
-	ParentID  *define.SnowflakeID `gorm:"type:bigint;index"`
-	UserID    define.SnowflakeID  `gorm:"type:bigint;index;not null"`
-	Order     int                 `gorm:"not null;default:0"`
-	Color     int                 `gorm:"not null"`
-	Name      string              `gorm:"type:varchar(120);not null"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        define.SnowflakeID `gorm:"type:bigint;primaryKey"`
+	ParentID  define.SnowflakeID `gorm:"type:bigint;index"`
+	UserID    define.SnowflakeID `gorm:"type:bigint;index;not null"`
+	Order     int                `gorm:"not null;default:0"`
+	Color     int                `gorm:"not null"`
+	Name      string             `gorm:"type:varchar(120);not null"`
+	CreatedAt core.CustomTime
+	UpdatedAt core.CustomTime
 }
 
 // Plan captures configuration and child entities.
 type Plan struct {
-	ID          define.SnowflakeID  `gorm:"type:bigint;primaryKey"`
-	ParentID    *define.SnowflakeID `gorm:"type:bigint;index"`
-	UserID      define.SnowflakeID  `gorm:"type:bigint;index;not null"`
-	Order       int                 `gorm:"not null;default:0"`
-	Color       int                 `gorm:"not null"`
-	Name        string              `gorm:"type:varchar(120);not null"`
-	Description string              `gorm:"type:varchar(255)"`
-	StartDate   time.Time
-	FinishDate  time.Time
+	ID          define.SnowflakeID `gorm:"type:bigint;primaryKey"`
+	ParentID    define.SnowflakeID `gorm:"type:bigint;index"`
+	UserID      define.SnowflakeID `gorm:"type:bigint;index;not null"`
+	Order       int                `gorm:"not null;default:0"`
+	Color       int                `gorm:"not null"`
+	Name        string             `gorm:"type:varchar(120);not null"`
+	Description string             `gorm:"type:varchar(255)"`
+	StartDate   core.CustomTime
+	FinishDate  core.CustomTime
 	DateType    DateType `gorm:"not null"`
 
-	MainRecordFieldID *define.SnowflakeID `gorm:"type:bigint;index"`
+	MainRecordFieldID define.SnowflakeID `gorm:"type:bigint;index"`
 
-	Goals        []Goal        `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	RecordFields []RecordField `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	RepeatRules  []RepeatRule  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Records      []Record      `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Statistics   []Statistics  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt core.CustomTime
+	UpdatedAt core.CustomTime
 }
 
 // Goal mirrors GoalEntity.
@@ -204,13 +196,13 @@ type Goal struct {
 	PlanID     define.SnowflakeID  `gorm:"type:bigint;index;not null"`
 	CycleType  GoalRepeatCycleType `gorm:"not null"`
 	Interval   int                 `gorm:"not null"`
-	RecordID   *define.SnowflakeID `gorm:"type:bigint"`
+	RecordID   define.SnowflakeID  `gorm:"type:bigint"`
 	Count      int                 `gorm:"not null"`
-	StartDate  time.Time
-	FinishDate time.Time
+	StartDate  core.CustomTime
+	FinishDate core.CustomTime
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt core.CustomTime
+	UpdatedAt core.CustomTime
 }
 
 // RecordField corresponds to RecordFieldEntity; both regular and repeat fields live here.
@@ -224,8 +216,8 @@ type RecordField struct {
 
 	Options []OptionItem `gorm:"foreignKey:RecordFieldID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt core.CustomTime
+	UpdatedAt core.CustomTime
 }
 
 // OptionItem is a tree under a RecordField.
@@ -237,8 +229,8 @@ type OptionItem struct {
 
 	Children []OptionItem `gorm:"foreignKey:ParentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt core.CustomTime
+	UpdatedAt core.CustomTime
 }
 
 // RepeatRule represents recurrence constraints.
@@ -253,11 +245,11 @@ type RepeatRule struct {
 	Weeks          IntArray    `gorm:"type:json"`
 	Weekdays       IntArray    `gorm:"type:json"`
 	Times          StringArray `gorm:"type:json"` // e.g. ["09:00","18:30"]
-	StartDate      time.Time
-	EndDate        time.Time
+	StartDate      core.CustomTime
+	EndDate        core.CustomTime
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt core.CustomTime
+	UpdatedAt core.CustomTime
 }
 
 // Record stores user-entered values (including start/finish date fields) as JSON.
@@ -272,8 +264,8 @@ type Record struct {
 	PlanID define.SnowflakeID `gorm:"type:bigint;index;not null"`
 	Values JSONMap            `gorm:"type:json;not null"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt core.CustomTime
+	UpdatedAt core.CustomTime
 }
 
 // Statistics configuration for a plan.
@@ -288,8 +280,8 @@ type Statistics struct {
 	XAxisIsRepeat bool                `gorm:"not null;default:false"`
 	YAxisIsRepeat bool                `gorm:"not null;default:false"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt core.CustomTime
+	UpdatedAt core.CustomTime
 }
 
 // =====================================================

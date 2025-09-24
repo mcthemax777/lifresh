@@ -1,46 +1,69 @@
 package repository
 
 import (
-	"gorm.io/gorm"
 	"lifresh/db"
+	"lifresh/define"
 	"lifresh/internal/domain"
 	"lifresh/internal/repository/model"
-	"time"
+
+	"gorm.io/gorm"
 )
 
-type FolderRepo struct{ dbConn *gorm.DB }
-
-func NewFolderRepo(dbConn *gorm.DB) *FolderRepo {
-	return &FolderRepo{dbConn: dbConn}
+type FolderRepo struct {
+	*BaseRepo[model.Folder, domain.Folder]
 }
 
-func (r *FolderRepo) FindByID(id int64) (*domain.Folder, error) {
-	var u *domain.Folder
-	return u, nil
+func NewFolderRepo(db *gorm.DB) *FolderRepo {
+	return &FolderRepo{NewBaseRepo[model.Folder, domain.Folder](db)}
 }
-func (r *FolderRepo) Save(f *domain.Folder) (*domain.Folder, error) {
 
-	if err := r.dbConn.Error; err != nil {
-		return f, err
+func (r *FolderRepo) ToDomain(m *model.Folder) *domain.Folder {
+	return &domain.Folder{
+		SystemFile: domain.SystemFile{
+			ID:        m.ID,
+			Name:      m.Name,
+			ParentID:  m.ParentID,
+			UserID:    m.UserID,
+			Order:     m.Order,
+			Color:     m.Color,
+			Type:      define.FileTypeFolder,
+			CreatedAt: m.CreatedAt,
+			UpdatedAt: m.UpdatedAt,
+		},
 	}
+}
 
-	a := &model.Folder{
-		ID:        db.NextID(),
-		ParentID:  f.ParentID,
-		UserID:    f.UserID,
-		Order:     f.Order,
-		Color:     f.Color,
-		Name:      f.Name,
-		CreatedAt: time.Time{},
-		UpdatedAt: time.Time{},
+func (r *FolderRepo) FromDomain(d *domain.Folder) *model.Folder {
+	return &model.Folder{
+		ID:        define.IfZero(d.ID, db.NextID()),
+		Name:      d.Name,
+		ParentID:  d.ParentID,
+		UserID:    d.UserID,
+		Order:     d.Order,
+		Color:     d.Color,
+		CreatedAt: d.CreatedAt,
+		UpdatedAt: d.UpdatedAt,
 	}
+}
 
-	result := r.dbConn.Create(&a)
+func (r *FolderRepo) First(conds ...any) (*domain.Folder, error) {
+	return r.BaseRepo.First(r, conds...)
+}
+func (r *FolderRepo) Find(conds ...any) ([]*domain.Folder, error) {
 
-	if result.Error != nil {
-		return f, result.Error
-	}
+	return r.BaseRepo.Find(r, conds...)
+}
+func (r *FolderRepo) Save(d *domain.Folder) (*domain.Folder, error)   { return r.BaseRepo.Save(r, d) }
+func (r *FolderRepo) Update(d *domain.Folder) (*domain.Folder, error) { return r.BaseRepo.Update(r, d) }
 
-	f.ID = a.ID
-	return f, nil
+func (r *FolderRepo) Delete(d *domain.Folder) error {
+	return r.BaseRepo.Delete("user_id = ? AND id = ?", d.UserID, d.ID)
+}
+
+func (r *FolderRepo) FindByUser(userID define.SnowflakeID) ([]*domain.Folder, error) {
+	return r.Find("user_id = ?", userID)
+}
+
+func (r *FolderRepo) FindById(id define.SnowflakeID) (*domain.Folder, error) {
+	return r.BaseRepo.FindById(r, id)
 }

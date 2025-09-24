@@ -10,7 +10,10 @@ import (
 	"lifresh/lflog"
 	"lifresh/redis"
 	"net/http"
+	"regexp"
+	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
 )
@@ -145,6 +148,24 @@ func (sah *SessionApiHandler) checkSession(uid string, sid string, currentTime t
 	return sessionInfo.AccountId, nil
 }
 
-func CurrentTime() time.Time {
-	return time.Now()
+// 정규식: 한글, 영문 대소문자, 숫자, 밑줄만 허용
+var nicknameRegex = regexp.MustCompile(`^[가-힣a-zA-Z0-9_]+$`)
+
+// ValidateNickname checks nickname validity:
+// - only 한글/영문/숫자/_
+// - trimmed length between 2 and 12 runes
+func ValidateNickname(nickname string) error {
+	nickname = strings.TrimSpace(nickname)
+	count := utf8.RuneCountInString(nickname)
+
+	if count < 2 {
+		return errors.New("닉네임은 최소 2글자여야 합니다")
+	}
+	if count > 12 {
+		return errors.New("닉네임은 최대 12글자까지 가능합니다")
+	}
+	if !nicknameRegex.MatchString(nickname) {
+		return errors.New("닉네임은 한글, 영문, 숫자, 밑줄(_)만 사용할 수 있습니다")
+	}
+	return nil
 }

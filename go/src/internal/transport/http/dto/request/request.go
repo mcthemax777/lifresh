@@ -1,193 +1,45 @@
 package request
 
+import (
+	"lifresh/internal/domain"
+)
+
 type Request interface {
 }
 
-type BaseRequest struct {
-	Uid string `json:"uid"`
-	Sid string `json:"sid"`
+type LoginReq struct {
+	SocialType  int    `json:"socialType"`
+	SocialToken string `json:"socialToken"`
 }
 
-type LoginReq struct {
-	SocialType  int    `json:"social_type"`
-	SocialToken string `json:"social_token"`
+type CreateUserReq struct {
+	User domain.User `json:"user"`
 }
 
 type RefreshReq struct {
-	RefreshToken string `json:"refresh_token"`
+	RefreshToken string `json:"refreshToken"`
 }
 
 type PingReq struct {
 }
 
 type GetUserReq struct {
-	UserID string `json:"user_id"`
+	UserID string `json:"userId"`
 }
 
-type GetItemReq struct {
-	ItemID string `json:"item_id"`
+type CreateFolderReq struct {
+	Folder *domain.Folder `json:"folder"`
 }
 
-type SignUpReq struct {
-	Nickname       string `json:"nickname"`
-	RootFolderName string `json:"root_folder_name"`
+type UpdateFolderReq struct {
+	Folder *domain.Folder `json:"folder"`
 }
 
-type CreateUserReq struct {
-	Uid            string `json:"uid"`
-	Sid            string `json:"sid"`
-	Nickname       string `json:"nickname"`
-	RootFolderName string `json:"root_folder_name"`
+type DeleteFolderReq struct {
+	Folder *domain.Folder `json:"folder"`
 }
 
 type GetAccountAllDataReq struct {
 	Uid string `json:"uid"`
 	Sid string `json:"sid"`
 }
-
-//
-//type AddPlanListReq struct {
-//	Uid                    string                     `json:"uid"`
-//	Sid                    string                     `json:"sid"`
-//	PlanList               []model.Plan               `json:"plan_list"`
-//	PlanRecordList         []model.PlanRecord         `json:"plan_record_list"`
-//	PlanRecordOperatorList []model.PlanRecordOperator `json:"plan_record_operator_list"`
-//	PlanGoalList           []model.PlanGoal           `json:"plan_goal_list"`
-//}
-//
-//type AddPlanRecordListReq struct {
-//	Uid            string             `json:"uid"`
-//	Sid            string             `json:"sid"`
-//	PlanRecordList []model.PlanRecord `json:"plan_record_list"`
-//}
-//
-//type AddPlanRecordOperatorListReq struct {
-//	Uid                    string                     `json:"uid"`
-//	Sid                    string                     `json:"sid"`
-//	PlanRecordOperatorList []model.PlanRecordOperator `json:"plan_record_operator_list"`
-//}
-//
-//type AddPlanGoalListReq struct {
-//	Uid          string           `json:"uid"`
-//	Sid          string           `json:"sid"`
-//	PlanGoalList []model.PlanGoal `json:"plan_goal_list"`
-//}
-
-//type AddDiaryCategoryListReq struct {
-//	Uid               string                 `json:"uid"`
-//	Sid               string                 `json:"sid"`
-//	DiaryCategoryList []models.DiaryCategory `json:"diary_category_list"`
-//}
-//type AddDiaryHistoryListReq struct {
-//	Uid              string                `json:"uid"`
-//	Sid              string                `json:"sid"`
-//	DiaryHistoryList []models.DiaryHistory `json:"diary_history_list"`
-//}
-//
-//type RemoveDiaryCategoryListReq struct {
-//	Uid                 string `json:"uid"`
-//	Sid                 string `json:"sid"`
-//	DiaryCategoryIdList []int  `json:"diary_category_id_list"`
-//}
-//
-//type RemoveDiaryHistoryListReq struct {
-//	Uid                string `json:"uid"`
-//	Sid                string `json:"sid"`
-//	DiaryHistoryIdList []int  `json:"diary_history_id_list"`
-//}
-//
-//type GetUserAllDataReq struct {
-//	Uid string `json:"uid"`
-//	Sid string `json:"sid"`
-//}
-//
-//type GetMainCategoryReq struct {
-//	Uid string `json:"uid"`
-//	Sid string `json:"sid"`
-//}
-//
-//type GetSubCategoryReq struct {
-//	Uid string `json:"uid"`
-//	Sid string `json:"sid"`
-//}
-//
-//type GetScheduleTaskReq struct {
-//	Uid string `json:"uid"`
-//	Sid string `json:"sid"`
-//}
-//
-//type GetToDoTaskReq struct {
-//	Uid string `json:"uid"`
-//	Sid string `json:"sid"`
-//}
-//
-//type GetMoneyTaskReq struct {
-//	Uid string `json:"uid"`
-//	Sid string `json:"sid"`
-//}
-//
-//type AddMainCategoryListReq struct {
-//	Uid              string                `json:"uid"`
-//	Sid              string                `json:"sid"`
-//	MainCategoryList []models.MainCategory `json:"mainCategoryList"`
-//}
-//
-//type AddSubCategoryListReq struct {
-//	Uid             string               `json:"uid"`
-//	Sid             string               `json:"sid"`
-//	SubCategoryList []models.SubCategory `json:"subCategoryList"`
-//}
-//
-//type AddMoneyManagerListReq struct {
-//	Uid              string                `json:"uid"`
-//	Sid              string                `json:"sid"`
-//	MoneyManagerList []models.MoneyManager `json:"moneyManagerList"`
-//}
-//
-//type AddScheduleTaskListReq struct {
-//	Uid              string                `json:"uid"`
-//	Sid              string                `json:"sid"`
-//	ScheduleTaskList []models.ScheduleTask `json:"scheduleTaskList"`
-//}
-//
-//type AddToDoTaskListReq struct {
-//	Uid          string            `json:"uid"`
-//	Sid          string            `json:"sid"`
-//	ToDoTaskList []models.ToDoTask `json:"todoTaskList"`
-//}
-//
-//type AddMoneyTaskListReq struct {
-//	Uid           string             `json:"uid"`
-//	Sid           string             `json:"sid"`
-//	MoneyTaskList []models.MoneyTask `json:"moneyTaskList"`
-//}
-//
-//type RemoveMainCategoryListReq struct {
-//	Uid                string `json:"uid"`
-//	Sid                string `json:"sid"`
-//	MainCategoryNoList []int  `json:"mainCategoryNoList"`
-//}
-//
-//type RemoveSubCategoryListReq struct {
-//	Uid               string `json:"uid"`
-//	Sid               string `json:"sid"`
-//	SubCategoryNoList []int  `json:"subCategoryNoList"`
-//}
-//
-//type RemoveScheduleTaskListReq struct {
-//	Uid                string `json:"uid"`
-//	Sid                string `json:"sid"`
-//	ScheduleTaskNoList []int  `json:"subScheduleTaskNoList"`
-//}
-//
-//type RemoveToDoTaskListReq struct {
-//	Uid            string `json:"uid"`
-//	Sid            string `json:"sid"`
-//	ToDoTaskNoList []int  `json:"toDoTaskNoList"`
-//}
-//
-//type RemoveMoneyTaskListReq struct {
-//	Uid             string `json:"uid"`
-//	Sid             string `json:"sid"`
-//	MoneyTaskNoList []int  `json:"moneyTaskNoList"`
-//}

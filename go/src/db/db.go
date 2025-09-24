@@ -61,7 +61,6 @@ func NewNamingOption(prefix string, singular bool, acronyms []string) CustomNami
 	}
 }
 
-// ColumnName: 약어 경계에 언더스코어 삽입 → 카멜 경계 underscoring → 전부 소문자
 func (n CustomNamingOption) ColumnName(_ string, column string) string {
 	// 1) 약어를 모두 대문자로 정규화 (Url→URL, Id→ID 등)
 	for _, ac := range n.acronyms {
@@ -69,6 +68,7 @@ func (n CustomNamingOption) ColumnName(_ string, column string) string {
 		column = strings.ReplaceAll(column, title, ac)
 		column = strings.ReplaceAll(column, strings.ToLower(ac), ac)
 	}
+
 	// 2) 컬럼 전체가 약어 하나인 경우: 바로 소문자 반환 (URL -> url)
 	up := strings.ToUpper(column)
 	for _, ac := range n.acronyms {
@@ -76,11 +76,24 @@ func (n CustomNamingOption) ColumnName(_ string, column string) string {
 			return strings.ToLower(ac)
 		}
 	}
+
 	// 3) 약어 앞에 언더스코어 삽입 (예: photoURL -> photo_URL)
 	column = n.reAcr.ReplaceAllString(column, "${1}_$2")
+
+	// 🔑 3-1) 약어를 토큰으로 보호 (UID → __UID__)
+	for _, ac := range n.acronyms {
+		column = strings.ReplaceAll(column, ac, "__"+ac+"__")
+	}
+
 	// 4) 일반 카멜 경계도 언더스코어 삽입 (예: apiKey -> api_Key)
 	column = n.reCamel.ReplaceAllString(column, "${1}_${2}")
-	// 5) 전부 소문자
+
+	// 5) 보호한 약어 복원
+	for _, ac := range n.acronyms {
+		column = strings.ReplaceAll(column, "__"+ac+"__", ac)
+	}
+
+	// 6) 전부 소문자
 	return strings.ToLower(column)
 }
 
