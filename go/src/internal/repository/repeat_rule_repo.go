@@ -20,7 +20,9 @@ func NewRepeatRuleRepo(db *gorm.DB) *RepeatRuleRepo {
 func (r *RepeatRuleRepo) ToDomain(m *model.RepeatRule) *domain.RepeatRule {
 	return &domain.RepeatRule{
 		ID:             m.ID,
+		LocalID:        m.LocalID,
 		PlanID:         m.PlanID,
+		LocalPlanID:    m.LocalPlanID,
 		Unit:           define.RepeatUnit(m.Unit),
 		Interval:       m.Interval,
 		PerRepeatCount: m.PerRepeatCount,
@@ -31,6 +33,7 @@ func (r *RepeatRuleRepo) ToDomain(m *model.RepeatRule) *domain.RepeatRule {
 		Times:          m.Times,
 		StartDate:      m.StartDate,
 		EndDate:        m.EndDate,
+		Order:          m.Order,
 		CreatedAt:      m.CreatedAt,
 		UpdatedAt:      m.UpdatedAt,
 	}
@@ -50,6 +53,7 @@ func (r *RepeatRuleRepo) FromDomain(d *domain.RepeatRule) *model.RepeatRule {
 		Times:          d.Times,
 		StartDate:      d.StartDate,
 		EndDate:        d.EndDate,
+		Order:          d.Order,
 		CreatedAt:      d.CreatedAt,
 		UpdatedAt:      d.UpdatedAt,
 	}
@@ -68,3 +72,6 @@ func (r *RepeatRuleRepo) Update(d *domain.RepeatRule) (*domain.RepeatRule, error
 	return r.BaseRepo.Update(r, d)
 }
 func (r *RepeatRuleRepo) Delete(conds ...any) error { return r.BaseRepo.Delete(conds...) }
+func (r *RepeatRuleRepo) FindByPlanID(id define.SnowflakeID) ([]*domain.RepeatRule, error) {
+	return r.BaseRepo.Find(r, "plan_id = ?", id)
+}

@@ -16,6 +16,10 @@ type CreateUserReq struct {
 	User domain.User `json:"user"`
 }
 
+type UpdateUserReq struct {
+	User domain.User `json:"user"`
+}
+
 type RefreshReq struct {
 	RefreshToken string `json:"refreshToken"`
 }
@@ -37,6 +41,18 @@ type UpdateFolderReq struct {
 
 type DeleteFolderReq struct {
 	Folder *domain.Folder `json:"folder"`
+}
+
+type CreatePlanReq struct {
+	Plan *domain.Plan `json:"plan"`
+}
+
+type UpdatePlanReq struct {
+	Plan *domain.Plan `json:"plan"`
+}
+
+type DeletePlanReq struct {
+	Plan *domain.Plan `json:"plan"`
 }
 
 type GetAccountAllDataReq struct {

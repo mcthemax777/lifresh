@@ -94,9 +94,18 @@ const (
 	ApiPing         = "/ping"
 	ApiGetUser      = "/user"
 	ApiCreateUser   = "/create-user"
+	ApiUpdateUser   = "/update-user"
 	ApiCreateFolder = "/create-folder"
 	ApiUpdateFolder = "/update-folder"
 	ApiDeleteFolder = "/delete-folder"
+
+	ApiCreatePlan = "/create-plan"
+	ApiUpdatePlan = "/update-plan"
+	ApiDeletePlan = "/delete-plan"
+
+	ApiCreateRecord = "/create-record"
+	ApiUpdateRecord = "/update-record"
+	ApiDeleteRecord = "/delete-record"
 )
 
 // =====================================================

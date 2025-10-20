@@ -12,6 +12,7 @@ const (
 	PING_RES
 	GET_USER_RES
 	CREATE_USER_RES
+	UPDATE_USER_RES
 	GET_FOLDER_RES
 	CREATE_FOLDER_RES
 	UPDATE_FOLDER_RES
@@ -63,6 +64,12 @@ func CreateSuccessResponse(resType int) Response {
 
 	case CREATE_USER_RES:
 		var res CreateUserRes
+		res.init(successCode, successMsg)
+
+		return &res
+
+	case UPDATE_USER_RES:
+		var res UpdateUserRes
 		res.init(successCode, successMsg)
 
 		return &res
@@ -140,6 +147,15 @@ type CreateUserRes struct {
 }
 
 func (res *CreateUserRes) init(code int, msg string) {
+	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
+}
+
+type UpdateUserRes struct {
+	User *domain.User `json:"user"`
+	BaseResponse
+}
+
+func (res *UpdateUserRes) init(code int, msg string) {
 	res.BaseResponse = BaseResponse{ResultCode: code, ResultMsg: msg}
 }
 

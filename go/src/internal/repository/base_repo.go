@@ -47,6 +47,9 @@ func (r *BaseRepo[M, D]) Find(mapper Mapper[M, D], conds ...any) ([]*D, error) {
 func (r *BaseRepo[M, D]) FindById(mapper Mapper[M, D], id define.SnowflakeID) (*D, error) {
 	return r.First(mapper, "id = ?", id)
 }
+func (r *BaseRepo[M, D]) FindByLocalId(mapper Mapper[M, D], id string) (*D, error) {
+	return r.First(mapper, "local_id = ?", id)
+}
 
 // Save: 새 row 생성
 func (r *BaseRepo[M, D]) Save(mapper Mapper[M, D], d *D) (*D, error) {

@@ -56,6 +56,9 @@ func ApiHandlerFx[T any, R any](
 		return err
 	}
 
+	//테스트를 위해 2초간 대기
+	time.Sleep(time.Duration(1) * time.Second)
+
 	//로직 실행
 	res, appError := process(req)
 

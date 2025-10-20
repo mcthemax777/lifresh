@@ -18,23 +18,35 @@ func NewOptionItemRepo(db *gorm.DB) *OptionItemRepo {
 
 func (r *OptionItemRepo) ToDomain(m *model.OptionItem) *domain.OptionItem {
 	return &domain.OptionItem{
-		ID:            m.ID,
-		RecordFieldID: m.RecordFieldID,
-		ParentID:      m.ParentID,
-		Name:          m.Name,
-		CreatedAt:     m.CreatedAt,
-		UpdatedAt:     m.UpdatedAt,
+		ID:                 m.ID,
+		LocalID:            m.LocalID,
+		PlanID:             m.PlanID,
+		LocalPlanID:        m.LocalPlanID,
+		ParentID:           m.ParentID,
+		LocalParentID:      m.LocalParentID,
+		RecordFieldID:      m.RecordFieldID,
+		LocalRecordFieldID: m.LocalRecordFieldID,
+		Name:               m.Name,
+		Order:              m.Order,
+		CreatedAt:          m.CreatedAt,
+		UpdatedAt:          m.UpdatedAt,
 	}
 }
 
 func (r *OptionItemRepo) FromDomain(d *domain.OptionItem) *model.OptionItem {
 	return &model.OptionItem{
-		ID:            define.IfZero(d.ID, db.NextID()),
-		RecordFieldID: d.RecordFieldID,
-		ParentID:      d.ParentID,
-		Name:          d.Name,
-		CreatedAt:     d.CreatedAt,
-		UpdatedAt:     d.UpdatedAt,
+		ID:                 define.IfZero(d.ID, db.NextID()),
+		LocalID:            d.LocalID,
+		PlanID:             d.PlanID,
+		LocalPlanID:        d.LocalPlanID,
+		ParentID:           d.ParentID,
+		LocalParentID:      d.LocalParentID,
+		RecordFieldID:      d.RecordFieldID,
+		LocalRecordFieldID: d.LocalRecordFieldID,
+		Name:               d.Name,
+		Order:              d.Order,
+		CreatedAt:          d.CreatedAt,
+		UpdatedAt:          d.UpdatedAt,
 	}
 }
 
@@ -51,3 +63,6 @@ func (r *OptionItemRepo) Update(d *domain.OptionItem) (*domain.OptionItem, error
 	return r.BaseRepo.Update(r, d)
 }
 func (r *OptionItemRepo) Delete(conds ...any) error { return r.BaseRepo.Delete(conds...) }
+func (r *OptionItemRepo) FindByRecordFieldID(id define.SnowflakeID) ([]*domain.OptionItem, error) {
+	return r.BaseRepo.Find(r, "record_field_id = ?", id)
+}

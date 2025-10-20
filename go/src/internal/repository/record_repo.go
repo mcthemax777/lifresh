@@ -19,21 +19,25 @@ func NewRecordRepo(db *gorm.DB) *RecordRepo {
 
 func (r *RecordRepo) ToDomain(m *model.Record) *domain.Record {
 	return &domain.Record{
-		ID:        m.ID,
-		PlanID:    m.PlanID,
-		Values:    m.Values,
-		CreatedAt: m.CreatedAt,
-		UpdatedAt: m.UpdatedAt,
+		ID:          m.ID,
+		LocalID:     m.LocalID,
+		PlanID:      m.PlanID,
+		LocalPlanID: m.LocalPlanID,
+		Values:      m.Values,
+		CreatedAt:   m.CreatedAt,
+		UpdatedAt:   m.UpdatedAt,
 	}
 }
 
 func (r *RecordRepo) FromDomain(d *domain.Record) *model.Record {
 	return &model.Record{
-		ID:        define.IfZero(d.ID, db.NextID()),
-		PlanID:    d.PlanID,
-		Values:    mcopy(d.Values),
-		CreatedAt: d.CreatedAt,
-		UpdatedAt: d.UpdatedAt,
+		ID:          define.IfZero(d.ID, db.NextID()),
+		LocalID:     d.LocalID,
+		PlanID:      d.PlanID,
+		LocalPlanID: d.LocalPlanID,
+		Values:      mcopy(d.Values),
+		CreatedAt:   d.CreatedAt,
+		UpdatedAt:   d.UpdatedAt,
 	}
 }
 
@@ -55,3 +59,6 @@ func (r *RecordRepo) Find(conds ...any) ([]*domain.Record, error) {
 func (r *RecordRepo) Save(d *domain.Record) (*domain.Record, error)   { return r.BaseRepo.Save(r, d) }
 func (r *RecordRepo) Update(d *domain.Record) (*domain.Record, error) { return r.BaseRepo.Update(r, d) }
 func (r *RecordRepo) Delete(conds ...any) error                       { return r.BaseRepo.Delete(conds...) }
+func (r *RecordRepo) FindByPlanID(id define.SnowflakeID) ([]*domain.Record, error) {
+	return r.BaseRepo.Find(r, "plan_id = ?", id)
+}

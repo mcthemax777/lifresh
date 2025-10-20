@@ -53,10 +53,27 @@ func main() {
 	userRepo := repository.NewUserRepo(dbConn)
 	folderRepo := repository.NewFolderRepo(dbConn)
 	planRepo := repository.NewPlanRepo(dbConn)
+	recordFieldRepo := repository.NewRecordFieldRepo(dbConn)
+	goalRepo := repository.NewGoalRepo(dbConn)
+	repeatRuleRepo := repository.NewRepeatRuleRepo(dbConn)
+	optionItemRepo := repository.NewOptionItemRepo(dbConn)
+	recordRepo := repository.NewRecordRepo(dbConn)
+	statisticsRepo := repository.NewStatisticsRepo(dbConn)
 
 	//service 생성
 	authService := service.NewAuthService()
-	userService := service.NewUserService(txMgr, accountRepo, userRepo, folderRepo, planRepo)
+	userService := service.NewUserService(txMgr,
+		accountRepo,
+		userRepo,
+		folderRepo,
+		planRepo,
+		recordFieldRepo,
+		goalRepo,
+		repeatRuleRepo,
+		optionItemRepo,
+		recordRepo,
+		statisticsRepo,
+	)
 
 	//handler 생성
 	loginHandler := handler.NewLoginHandler(authService, userService)
@@ -65,9 +82,16 @@ func main() {
 	pingHandler := handler.NewPingHandler()
 	getUserHandler := handler.NewGetUserHandler(userService)
 	createUserHandler := handler.NewCreateUserHandler(userService)
+	updateUserHandler := handler.NewUpdateUserHandler(userService)
 	createFolderHandler := handler.NewCreateFolderHandler(userService)
 	updateFolderHandler := handler.NewUpdateFolderHandler(userService)
 	deleteFolderHandler := handler.NewDeleteFolderHandler(userService)
+	createPlanHandler := handler.NewCreatePlanHandler(userService)
+	updatePlanHandler := handler.NewUpdatePlanHandler(userService)
+	deletePlanHandler := handler.NewDeletePlanHandler(userService)
+	//createRecordHandler := handler.NewCreateRecordHandler(userService)
+	//updateRecordHandler := handler.NewUpdateRecordHandler(userService)
+	//deleteRecordHandler := handler.NewDeleteRecordHandler(userService)
 
 	// Auth (미들웨어에서 자동 스킵)
 	authGroup := r.Group(define.RouterAuth)
@@ -87,9 +111,19 @@ func main() {
 		apiGroup.GET(define.ApiPing, pingHandler.ApiCall)
 		apiGroup.POST(define.ApiGetUser, getUserHandler.ApiCall)
 		apiGroup.POST(define.ApiCreateUser, createUserHandler.ApiCall)
+		apiGroup.POST(define.ApiUpdateUser, updateUserHandler.ApiCall)
 		apiGroup.POST(define.ApiCreateFolder, createFolderHandler.ApiCall)
 		apiGroup.POST(define.ApiUpdateFolder, updateFolderHandler.ApiCall)
 		apiGroup.POST(define.ApiDeleteFolder, deleteFolderHandler.ApiCall)
+
+		apiGroup.POST(define.ApiCreatePlan, createPlanHandler.ApiCall)
+		apiGroup.POST(define.ApiUpdatePlan, updatePlanHandler.ApiCall)
+		apiGroup.POST(define.ApiDeletePlan, deletePlanHandler.ApiCall)
+		//
+		//apiGroup.POST(define.ApiCreateRecord, createRecordHandler.ApiCall)
+		//apiGroup.POST(define.ApiUpdateRecord, updateRecordHandler.ApiCall)
+		//apiGroup.POST(define.ApiDeleteRecord, deleteRecordHandler.ApiCall)
+
 		// Root / Items
 		//apiGroup.GET("/v1/root", getRoot)
 		//apiGroup.PUT("/v1/root", putRoot)

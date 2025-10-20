@@ -31,8 +31,9 @@ func (r *AccountRepo) ToDomain(m *model.Account) *domain.Account {
 }
 
 func (r *AccountRepo) FromDomain(d *domain.Account) *model.Account {
+	id := define.IfZero(d.ID, db.NextID())
 	return &model.Account{
-		ID:          define.IfZero(d.ID, db.NextID()),
+		ID:          id,
 		Name:        d.Name,
 		Email:       d.Email,
 		PhotoURL:    d.PhotoURL,
