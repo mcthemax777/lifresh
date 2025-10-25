@@ -12,6 +12,8 @@ import (
 	"lifresh/internal/service"
 	"lifresh/internal/transport/http/handler"
 	"lifresh/internal/txmgr"
+	"lifresh/internal/worker"
+	"lifresh/redis"
 	"log"
 	"os"
 	"time"
@@ -36,6 +38,9 @@ func main() {
 			log.Printf("[tx] rollback err=%v", err)
 		},
 	}
+
+	w := worker.NewOutboxWorker(dbConn, redis.GetRedisClient())
+	w.Run(3 * time.Second)
 
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()

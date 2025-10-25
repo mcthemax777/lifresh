@@ -1,9 +1,10 @@
 package redis
 
 import (
-	"context"
 	"encoding/json"
+	"fmt"
 	"lifresh/define"
+	"log"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -14,51 +15,17 @@ var RedisHandlerSG RedisHandlerImpl
 var redisClient *redis.Client
 
 type RedisInfo struct {
-	user     string
-	pwd      string
-	url      string
-	engine   string
-	database string
+	user string
+	pwd  string
+	url  string
 }
-
-// type camelNamer struct
-// {
-
-// }
-
-// func (cm *camelNamer) ColumnName(table, column string) string {
-// 	return column
-// }
-
-// func (cm *camelNamer) TableName(table string) string {
-// 	return table
-// }
-
-// func (cm *camelNamer) JoinTableName(table string) string {
-// 	return table
-// }
-
-// func (cm *camelNamer) RelationshipFKName(ss schema.Relationship) string {
-// 	return ""
-// }
-
-// func (cm *camelNamer) CheckerName(table, column string) string {
-// 	return column
-// }
-
-// func (cm *camelNamer) IndexName(table, column string) string {
-// 	return column
-// }
-
-var ctx = context.Background()
-var SESSION_KEY = "session"
 
 func init() {
 
-	var localRedisInfo = RedisInfo{"root", "1234", "host.docker.internal:6379", "mysql", "Lifresh"}
+	var localRedisInfo = RedisInfo{"root", "1234", "host.docker.internal:6379"}
 
 	if define.OsType == define.OsTypeWindows || define.OsType == define.OsTypeMac {
-		localRedisInfo = RedisInfo{"root", "1234", "localhost:6379", "mysql", "lifresh"}
+		localRedisInfo = RedisInfo{"root", "1234", "localhost:6379"}
 	}
 
 	client := redis.NewClient(&redis.Options{
@@ -74,6 +41,37 @@ func init() {
 	}
 
 	redisClient = client
+}
+
+func GetRedisClient() *redis.Client { return redisClient }
+
+func SubscribeStream(rdb *redis.Client, stream string) {
+	group := "lifresh_workers"
+
+	// 그룹 생성 (없으면)
+	rdb.XGroupCreateMkStream(stream, group, "$")
+
+	for {
+		msgs, err := rdb.XReadGroup(&redis.XReadGroupArgs{
+			Group:    group,
+			Consumer: "worker-1",
+			Streams:  []string{stream, ">"},
+			Count:    10,
+			Block:    0,
+		}).Result()
+
+		if err != nil {
+			log.Printf("[StreamWorker] read err: %v", err)
+			continue
+		}
+
+		for _, m := range msgs {
+			for _, v := range m.Messages {
+				fmt.Println("Received:", v.Values)
+				// TODO: handle payload
+			}
+		}
+	}
 }
 
 // type RedisHandler interface {

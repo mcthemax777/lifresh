@@ -169,6 +169,8 @@ type Folder struct {
 	Color         int                `gorm:"not null"`
 	Name          string             `gorm:"type:varchar(120);not null"`
 	Order         int                `gorm:"not null;default:0"`
+	EntityVersion int64              `gorm:"not null;default:1"`
+	GlobalVersion int64              `gorm:"not null;default:0"`
 	CreatedAt     core.CustomTime
 	UpdatedAt     core.CustomTime
 }
@@ -189,9 +191,12 @@ type Plan struct {
 
 	MainRecordFieldID define.SnowflakeID `gorm:"type:bigint;index"`
 
-	Order     int `gorm:"not null;default:0"`
-	CreatedAt core.CustomTime
-	UpdatedAt core.CustomTime
+	Order         int   `gorm:"not null;default:0"`
+	EntityVersion int64 `gorm:"not null;default:1"`
+	GlobalVersion int64 `gorm:"not null;default:0"`
+	GroupVersion  int64 `gorm:"not null;default:0"`
+	CreatedAt     core.CustomTime
+	UpdatedAt     core.CustomTime
 }
 
 // Goal mirrors GoalEntity.
@@ -208,9 +213,11 @@ type Goal struct {
 	StartDate          *core.CustomTime
 	FinishDate         *core.CustomTime
 
-	Order     int `gorm:"not null;default:0"`
-	CreatedAt core.CustomTime
-	UpdatedAt core.CustomTime
+	Order         int   `gorm:"not null;default:0"`
+	EntityVersion int64 `gorm:"not null;default:1"`
+	GlobalVersion int64 `gorm:"not null;default:0"`
+	CreatedAt     core.CustomTime
+	UpdatedAt     core.CustomTime
 }
 
 // RecordField corresponds to RecordFieldEntity; both regular and repeat fields live here.
@@ -226,9 +233,11 @@ type RecordField struct {
 
 	Options []OptionItem `gorm:"foreignKey:RecordFieldID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	Order     int `gorm:"not null;default:0"`
-	CreatedAt core.CustomTime
-	UpdatedAt core.CustomTime
+	Order         int   `gorm:"not null;default:0"`
+	EntityVersion int64 `gorm:"not null;default:1"`
+	GlobalVersion int64 `gorm:"not null;default:0"`
+	CreatedAt     core.CustomTime
+	UpdatedAt     core.CustomTime
 }
 
 // OptionItem is a tree under a RecordField.
@@ -245,9 +254,11 @@ type OptionItem struct {
 
 	Children []OptionItem `gorm:"foreignKey:ParentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	Order     int `gorm:"not null;default:0"`
-	CreatedAt core.CustomTime
-	UpdatedAt core.CustomTime
+	Order         int   `gorm:"not null;default:0"`
+	EntityVersion int64 `gorm:"not null;default:1"`
+	GlobalVersion int64 `gorm:"not null;default:0"`
+	CreatedAt     core.CustomTime
+	UpdatedAt     core.CustomTime
 }
 
 // RepeatRule represents recurrence constraints.
@@ -267,9 +278,11 @@ type RepeatRule struct {
 	StartDate      core.CustomTime
 	EndDate        core.CustomTime
 
-	Order     int `gorm:"not null;default:0"`
-	CreatedAt core.CustomTime
-	UpdatedAt core.CustomTime
+	Order         int   `gorm:"not null;default:0"`
+	EntityVersion int64 `gorm:"not null;default:1"`
+	GlobalVersion int64 `gorm:"not null;default:0"`
+	CreatedAt     core.CustomTime
+	UpdatedAt     core.CustomTime
 }
 
 // Record stores user-entered values (including start/finish date fields) as JSON.
@@ -286,8 +299,10 @@ type Record struct {
 	LocalPlanID string             `gorm:"type:varchar(255)"`
 	Values      JSONMap            `gorm:"type:json;not null"`
 
-	CreatedAt core.CustomTime
-	UpdatedAt core.CustomTime
+	EntityVersion int64 `gorm:"not null;default:1"`
+	GlobalVersion int64 `gorm:"not null;default:0"`
+	CreatedAt     core.CustomTime
+	UpdatedAt     core.CustomTime
 }
 
 // Statistics configuration for a plan.
@@ -304,9 +319,47 @@ type Statistics struct {
 	XAxisIsRepeat bool                `gorm:"not null;default:false"`
 	YAxisIsRepeat bool                `gorm:"not null;default:false"`
 
-	Order     int `gorm:"not null;default:0"`
-	CreatedAt core.CustomTime
-	UpdatedAt core.CustomTime
+	Order         int   `gorm:"not null;default:0"`
+	EntityVersion int64 `gorm:"not null;default:1"`
+	GlobalVersion int64 `gorm:"not null;default:0"`
+	CreatedAt     core.CustomTime
+	UpdatedAt     core.CustomTime
+}
+
+// =====================================================
+// Sync Meta Tables
+// =====================================================
+
+// 그룹 버전 (예: plan_records, folder_tree 등)
+type DataVersion struct {
+	GroupType string             `gorm:"primaryKey;type:varchar(50)"`
+	GroupID   define.SnowflakeID `gorm:"primaryKey;type:bigint"`
+	Version   int64              `gorm:"not null"`
+	UpdatedAt core.CustomTime    `gorm:"autoUpdateTime"`
+}
+
+// 변경 로그 (증분 동기화)
+type ChangeLog struct {
+	ID            uint64 `gorm:"primaryKey;autoIncrement"`
+	GlobalVersion int64  `gorm:"uniqueIndex;not null"`
+	EntityType    string
+	EntityID      define.SnowflakeID
+	GroupType     string
+	GroupID       define.SnowflakeID
+	Operation     string // create/update/delete
+	ActorID       define.SnowflakeID
+	Payload       JSONMap         `gorm:"type:json"`
+	CreatedAt     core.CustomTime `gorm:"autoCreateTime"`
+}
+
+// Outbox for Redis Streams 발행
+type Outbox struct {
+	ID        uint64          `gorm:"primaryKey;autoIncrement"`
+	EventID   string          `gorm:"uniqueIndex;type:varchar(36)"`
+	Stream    string          `gorm:"type:varchar(100);not null"`
+	Payload   JSONMap         `gorm:"type:json"`
+	Processed bool            `gorm:"not null;default:false"`
+	CreatedAt core.CustomTime `gorm:"autoCreateTime"`
 }
 
 // =====================================================
@@ -324,5 +377,8 @@ func AutoMigrate(db *gorm.DB) error {
 		&RepeatRule{},
 		&Record{},
 		&Statistics{},
+		&DataVersion{},
+		&ChangeLog{},
+		&Outbox{},
 	)
 }
