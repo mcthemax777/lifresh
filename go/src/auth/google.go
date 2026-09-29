@@ -1,111 +1,86 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"golang.org/x/net/context"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 )
 
-const oauthGoogleUrlAPI = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
-const redirectUrl = "http://localhost:8000/auth/google/callback"
-const clientID = "1040063090576-jb2det5gcol7p62otei8k4mn51qb3ki5.apps.googleusercontent.com"
-const clientSecret = "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"
-const scope = "https://www.googleapis.com/auth/userinfo.email"
+const oauthGoogleURLAPI = "https://www.googleapis.com/oauth2/v2/userinfo"
+const googleScope = "https://www.googleapis.com/auth/userinfo.email"
 
-type GoogleAuth struct {
-	googleOauthConfig oauth2.Config
-	oauthUrl          string
-}
+type GoogleAuth struct{}
 
-func (g GoogleAuth) init() {
-	g.googleOauthConfig = oauth2.Config{
-		RedirectURL:  redirectUrl,
+func googleOAuthConfig() (oauth2.Config, error) {
+	clientID := os.Getenv("GOOGLE_OAUTH_CLIENT_ID")
+	clientSecret := os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET")
+	redirectURL := os.Getenv("GOOGLE_OAUTH_REDIRECT_URL")
+	if clientID == "" || clientSecret == "" || redirectURL == "" {
+		return oauth2.Config{}, errors.New("Google OAuth configuration is incomplete")
+	}
+	return oauth2.Config{
+		RedirectURL:  redirectURL,
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
-		Scopes:       []string{scope},
+		Scopes:       []string{googleScope},
 		Endpoint:     google.Endpoint,
-	}
-	g.oauthUrl = oauthGoogleUrlAPI
-}
-
-func (g GoogleAuth) getRedirectUrl(c *gin.Context) string {
-	state := generateStateOauthCookie(c.Writer)
-	url := g.googleOauthConfig.AuthCodeURL(state)
-	return url
+	}, nil
 }
 
 func (g GoogleAuth) AuthCallback(c *gin.Context) {
-
-	oauthstate, _ := c.Request.Cookie("oauthstate") // 12
-
-	if c.Request.FormValue("state") != oauthstate.Value { // 13
-		log.Printf("invalid google oauth state cookie:%s state:%s\n", oauthstate.Value, c.Request.FormValue("state"))
-		c.Redirect(http.StatusTemporaryRedirect, "/")
-		return
-	}
-
-	data, err := g.getGoogleUserInfo(c.Request.FormValue("code")) // 14
-	if err != nil {                                               // 15
-		log.Println(err.Error())
-		c.Redirect(http.StatusTemporaryRedirect, "/")
-		return
-	}
-
-	//time.Sleep(time.Duration(50) * time.Second)
-	_, err = fmt.Fprint(c.Writer, string(data))
+	config, err := googleOAuthConfig()
 	if err != nil {
+		log.Print(err)
+		c.AbortWithStatus(http.StatusServiceUnavailable)
 		return
-	} // 16
+	}
+
+	oauthstate, err := c.Request.Cookie("oauthstate")
+	if err != nil || oauthstate.Value == "" || c.Query("state") != oauthstate.Value {
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+		return
+	}
+
+	data, err := g.getGoogleUserInfo(c.Request, config, c.Query("code"))
+	if err != nil {
+		log.Print("Google OAuth callback failed")
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+		return
+	}
+	_, _ = c.Writer.Write(data)
 }
 
-func (g GoogleAuth) getGoogleUserInfo(code string) ([]byte, error) { // 17
-
-	token, err := g.googleOauthConfig.Exchange(context.Background(), code) // 18
-	if err != nil {                                                        // 19
-		return nil, fmt.Errorf("Failed to Exchange %s\n", err.Error())
+func (g GoogleAuth) getGoogleUserInfo(req *http.Request, config oauth2.Config, code string) ([]byte, error) {
+	token, err := config.Exchange(req.Context(), code)
+	if err != nil {
+		return nil, fmt.Errorf("Google OAuth code exchange failed: %w", err)
 	}
 
-	resp, err := http.Get(g.oauthUrl + token.AccessToken) // 20
-	if err != nil {                                       // 21
-		return nil, fmt.Errorf("Failed to Get UserInfo %s\n", err.Error())
+	resp, err := config.Client(req.Context(), token).Get(oauthGoogleURLAPI)
+	if err != nil {
+		return nil, fmt.Errorf("Google user info request failed: %w", err)
 	}
-
-	return ioutil.ReadAll(resp.Body) // 23
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Google user info returned status %d", resp.StatusCode)
+	}
+	return io.ReadAll(resp.Body)
 }
 
 func (g GoogleAuth) LoginHandler(c *gin.Context) {
-
+	config, err := googleOAuthConfig()
+	if err != nil {
+		log.Print(err)
+		c.AbortWithStatus(http.StatusServiceUnavailable)
+		return
+	}
 	state := generateStateOauthCookie(c.Writer)
-	url := g.googleOauthConfig.AuthCodeURL(state)
-	c.Redirect(http.StatusTemporaryRedirect, url)
+	c.Redirect(http.StatusTemporaryRedirect, config.AuthCodeURL(state))
 }
-
-//func (g GoogleAuth) GoogleForm(c *gin.Context) {
-//	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(
-//		"<html>"+
-//			"\n<head>\n    "+
-//			"<title>Go Oauth2.0 Test</title>\n"+
-//			"</head>\n"+
-//			"<body>\n<p>"+
-//			"<a href='./auth/google/login'>Google Login</a>"+
-//			"</p>\n"+
-//			"</body>\n"+
-//			"</html>"))
-//}
-
-//
-//func main1() {
-//
-//	r := gin.Default()
-//
-//	r.GET("/", googleForm)
-//	r.GET("/auth/google/login", googleLoginHandler)
-//	r.GET("/auth/google/callback", googleAuthCallback)
-//
-//	r.Run(":8000")
-//}
