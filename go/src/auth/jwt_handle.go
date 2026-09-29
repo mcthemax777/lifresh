@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"lifresh/define"
@@ -24,10 +25,18 @@ type RefreshClaims struct {
 	jwt.RegisteredClaims
 }
 
+func requiredJWTSecret(name string) ([]byte, error) {
+	secret := os.Getenv(name)
+	if len(secret) < 32 {
+		return nil, fmt.Errorf("%s must contain at least 32 bytes", name)
+	}
+	return []byte(secret), nil
+}
+
 func SignAccess(accountID define.SnowflakeID, uid string, ttl time.Duration) (string, *apperr.AppError) {
-	secret := os.Getenv("JWT_ACCESS_SECRET")
-	if secret == "" {
-		secret = "dev-access-secret"
+	secret, err := requiredJWTSecret("JWT_ACCESS_SECRET")
+	if err != nil {
+		return "", apperr.New(201, "authentication configuration error", err)
 	}
 	now := time.Now()
 	cl := AccessClaims{
@@ -40,7 +49,7 @@ func SignAccess(accountID define.SnowflakeID, uid string, ttl time.Duration) (st
 		},
 	}
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, cl)
-	at, err := t.SignedString([]byte(secret))
+	at, err := t.SignedString(secret)
 	if err != nil {
 		return "", apperr.New(201, "access_token invalid", err)
 	}
@@ -49,9 +58,9 @@ func SignAccess(accountID define.SnowflakeID, uid string, ttl time.Duration) (st
 }
 
 func SignRefresh(accountID define.SnowflakeID, uid string, ttl time.Duration) (string, string, *apperr.AppError) {
-	secret := os.Getenv("JWT_REFRESH_SECRET")
-	if secret == "" {
-		secret = "dev-refresh-secret"
+	secret, err := requiredJWTSecret("JWT_REFRESH_SECRET")
+	if err != nil {
+		return "", "", apperr.New(201, "authentication configuration error", err)
 	}
 	now := time.Now()
 	jti := strings.ReplaceAll(time.Now().Format("20060102150405.000000000"), ".", "")
@@ -67,7 +76,7 @@ func SignRefresh(accountID define.SnowflakeID, uid string, ttl time.Duration) (s
 		},
 	}
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, cl)
-	signed, err := t.SignedString([]byte(secret))
+	signed, err := t.SignedString(secret)
 	if err != nil {
 		return "", "", apperr.New(201, "refresh_token invalid", err)
 	}
@@ -76,27 +85,27 @@ func SignRefresh(accountID define.SnowflakeID, uid string, ttl time.Duration) (s
 }
 
 func parseAccess(tokenStr string) (*AccessClaims, error) {
-	secret := os.Getenv("JWT_ACCESS_SECRET")
-	if secret == "" {
-		secret = "dev-access-secret"
+	secret, err := requiredJWTSecret("JWT_ACCESS_SECRET")
+	if err != nil {
+		return nil, err
 	}
 	tok, err := jwt.ParseWithClaims(tokenStr, &AccessClaims{}, func(t *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
-	if err != nil || !tok.Valid {
+		return secret, nil
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
+	if err != nil || tok == nil || !tok.Valid {
 		return nil, errors.New("invalid access token")
 	}
 	return tok.Claims.(*AccessClaims), nil
 }
 
 func ParseRefresh(tokenStr string) (*RefreshClaims, *apperr.AppError) {
-	secret := os.Getenv("JWT_REFRESH_SECRET")
-	if secret == "" {
-		secret = "dev-refresh-secret"
+	secret, err := requiredJWTSecret("JWT_REFRESH_SECRET")
+	if err != nil {
+		return nil, apperr.New(201, "authentication configuration error", err)
 	}
 	tok, err := jwt.ParseWithClaims(tokenStr, &RefreshClaims{}, func(t *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
+		return secret, nil
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 	if err != nil || !tok.Valid {
 		return nil, apperr.New(201, "invalid_refresh", err)
 	}
@@ -121,6 +130,10 @@ func JWTAuthSkipper() gin.HandlerFunc {
 		tokenStr := strings.TrimPrefix(h, "Bearer ")
 		cl, err := parseAccess(tokenStr)
 		if err != nil {
+			if _, configErr := requiredJWTSecret("JWT_ACCESS_SECRET"); configErr != nil {
+				c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{"code": 503, "msg": "authentication unavailable"})
+				return
+			}
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": "invalid token"})
 			return
 		}
